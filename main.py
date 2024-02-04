@@ -29,7 +29,6 @@ def read_graph(file_name):
         print(f"Error reading graph from '{file_name}': {e}")
         return None
 
-    pass
 
 def save_graph(G, file_name):
     # Implement writing the graph to an external file in adjacency list format
