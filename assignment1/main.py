@@ -8,7 +8,7 @@ def read_graph(file_name):
     try:
         # Create an empty graph
         G = nx.Graph()
-        
+
         # Read the adjacency list from the file
         with open(file_name, 'r') as file:
             for line in file:
@@ -22,7 +22,7 @@ def read_graph(file_name):
                     # Add edges to the graph
                     for target in targets:
                         G.add_edge(source, target)
-        
+
         return G
     except FileNotFoundError:
         print(f"File '{file_name}' not found.")
@@ -43,13 +43,13 @@ def save_graph(G, file_name):
         print(f"Graph saved to '{file_name}' successfully.")
     except Exception as e:
         print(f"Error saving graph to '{file_name}': {e}")
-    pass
+
 
 def create_random_graph(n, c):
     # Implement creating an Erdos-Renyi random graph with n nodes and probability p = c/n
     try:
         # Create an Erdos-Renyi random graph with sorted nodes
-        p = c + ln(n)/n
+        p = c + ln(n) / n
         nodes = [str(i) for i in range(n)]  # Generate node names as strings from '0' to 'n-1'
         G = nx.erdos_renyi_graph(n, p)
         mapping = {old_node: new_node for old_node, new_node in
@@ -117,40 +117,41 @@ def main():
         print("4. Shortest Path")
         print("5. Plot G")
         print("x. Exit")
-        
+
         choice = input("Enter your choice: ")
-        
+
         if choice == "1":
             file_name = input("Enter file name: ")
             graph = read_graph(file_name)
             # Handle if graph is None or other error cases
-            
+
         elif choice == "2":
             file_name = input("Enter file name: ")
             save_graph(graph, file_name)
             # Handle if graph is not defined or other error cases
-            
+
         elif choice == "3":
             n = int(input("Enter number of nodes: "))
             c = float(input("Enter parameter c: "))
             graph = create_random_graph(n, c)
             # Handle invalid inputs or other error cases
-            
+
         elif choice == "4":
             source = input("Enter source node: ")
             target = input("Enter target node: ")
             shortest = shortest_path(graph, source, target)
             # Handle if shortest_path is None or other error cases
-            
+
         elif choice == "5":
             plot_graph(graph, shortest)
             # Handle if graph is not defined or other error cases
-            
+
         elif choice.lower() == "x":
             break
-            
+
         else:
             print("Invalid choice. Please try again.")
+
 
 if __name__ == "__main__":
     main()
