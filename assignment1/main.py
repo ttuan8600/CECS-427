@@ -132,30 +132,75 @@ def main():
         choice = input("Enter your choice: ")
 
         if choice == "1":
-            file_name = input("Enter file name: ")
-            graph = read_graph(file_name)
-            # Handle if graph is None or other error cases
+            try:
+                file_name = input("Enter file name: ")
+                graph = read_graph(file_name)
+                # Check if the graph exist
+                if graph is None:
+                    print("Error: Unable to read graph from file.")
+                else:
+                    print("Graph successfully read.")
+            # Throw any other errors
+            except Exception as e:
+                print(f"Error: {e}")
 
         elif choice == "2":
-            file_name = input("Enter file name: ")
-            save_graph(graph, file_name)
-            # Handle if graph is not defined or other error cases
+            try:
+                # Check if graph is ready to save
+                if 'graph' not in locals():
+                    raise ValueError("Graph is not defined.")
+                file_name = input("Enter file name: ")
+                save_graph(graph, file_name)
+                print("Graph saved successfully.")
+            except Exception as e:
+                print(f"Error: {e}")
 
         elif choice == "3":
-            n = int(input("Enter number of nodes: "))
-            c = float(input("Enter parameter c: "))
-            graph = create_random_graph(n, c)
-            # Handle invalid inputs or other error cases
+            try:
+                n = int(input("Enter number of nodes: "))
+                c = float(input("Enter parameter c: "))
+                # Check if n or c is negative
+                if n <= 0 or c <= 0:
+                    raise ValueError("Invalid inputs. Number of nodes n and parameter c must be positive.")
+                graph = create_random_graph(n, c)
+                print("Random graph successfully created.")
+            # Throw any other errors
+            except ValueError as e:
+                print(f"Error: {e}")
+            except Exception as e:
+                print(f"Error: {e}")
+
 
         elif choice == "4":
-            source = input("Enter source node: ")
-            target = input("Enter target node: ")
-            shortest = shortest_path(graph, source, target)
-            # Handle if shortest_path is None or other error cases
+            try:
+                # Check if graph is defined yet
+                if 'graph' not in locals():
+                    raise ValueError("Graph is not defined.")
+                source = input("Enter source node: ")
+                target = input("Enter target node: ")
+                shortest = shortest_path(graph, source, target)
+                if shortest is None:
+                    print("Error: NO shortest path found.")
+                else:
+                    print(f"Shortest path: {shortest}")
+            # Throw any other errors
+            except ValueError as e:
+                print(f"Error: {e}")
+            except Exception as e:
+                print(f"Error: {e}")
 
         elif choice == "5":
-            plot_graph(graph, shortest)
-            # Handle if graph is not defined or other error cases
+            try:
+                # Check if graph and shortest path is defined yet
+                if 'graph' not in locals() or 'shortest' not in locals():
+                    raise ValueError("Graph or shortest path is not defined.")
+                plot_graph(graph, shortest)
+                print("Graph plotted")
+            # Throw any other errors
+            except ValueError as e:
+                print(f"Error: {e}")
+            except Exception as e:
+                print(f"Error: {e}")
 
         elif choice.lower() == "x":
             return None
