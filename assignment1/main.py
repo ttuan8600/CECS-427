@@ -73,7 +73,6 @@ def shortest_path(G, source, target):
     try:
         # Compute the shortest path
         path = nx.shortest_path(G, source=source, target=target)
-        print(f"Shortest path from {source} to {target}: {path}")
         return path
     # Throw error when there are no path between the source and target
     except nx.NetworkXNoPath:
@@ -163,13 +162,11 @@ def main():
                 if n <= 0 or c <= 0:
                     raise ValueError("Invalid inputs. Number of nodes n and parameter c must be positive.")
                 graph = create_random_graph(n, c)
-                print("Random graph successfully created.")
             # Throw any other errors
             except ValueError as e:
                 print(f"Error: {e}")
             except Exception as e:
                 print(f"Error: {e}")
-
 
         elif choice == "4":
             try:
@@ -182,7 +179,7 @@ def main():
                 if shortest is None:
                     print("Error: NO shortest path found.")
                 else:
-                    print(f"Shortest path: {shortest}")
+                    print(f"Shortest path from {source} to {target}: {shortest}")
             # Throw any other errors
             except ValueError as e:
                 print(f"Error: {e}")
@@ -195,7 +192,9 @@ def main():
                 if 'graph' not in locals() or 'shortest' not in locals():
                     raise ValueError("Graph or shortest path is not defined.")
                 plot_graph(graph, shortest)
-                print("Graph plotted")
+                print("Graph plotted.")
+                # Reset shortest path prevent errors with other graph
+                shortest = None
             # Throw any other errors
             except ValueError as e:
                 print(f"Error: {e}")

@@ -1,0 +1,22 @@
+Assignment Graphs
+Twan Tran @029136612
+CECS 427
+
+*Approach: This code defines several functions to work with graphs using the NetworkX library. Here's a brief overview of each function:
+
+1) read_graph(file_name): Reads a graph from an external file in adjacency list format and returns it as a NetworkX graph object. It handles file not found errors and other exceptions.
+2) save_graph(G, file_name): Writes a graph to an external file in adjacency list format. It handles exceptions when failing to save the graph.
+3) create_random_graph(n, c): Creates an Erdos-Renyi random graph with n nodes and a probability p = c + (ln(n) / n). It handles exceptions when creating the graph.
+4) shortest_path(G, source, target): Finds the shortest path between source and target nodes in graph G. It handles exceptions for cases where there is no path, nodes are not found, or other errors occur.
+5) plot_graph(G, shortest=None): Plots the graph G using a spring layout and optionally highlights the shortest path if provided.
+
+*Challenges Faced: 
+
+I have to handle all possible exceptions. After hours working on the code, the code is now effectively handling various types of errors, including file not found errors, graph creation errors, and path finding errors. It also provides informative error messages to help users understand what went wrong.
+
+*Additional Features Implemented:
+
+> I uses try-except blocks to handle exceptions gracefully and provide meaningful error messages.
+> I also includes a menu-based user interface (main function) to interactively perform graph operations.
+> I added Global variables shortest and graph are used to store the current shortest path and graph, respectively, to maintain state across menu options.
+> The plot_graph function can highlight the shortest path on the graph if provided.
