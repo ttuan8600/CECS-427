@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from numpy import log as ln
 
 
+# Read a graph from an external file in adjacency list format
 def read_graph(file_name):
-    # Implement reading a graph from an external file in adjacency list format
     try:
         # Create an empty graph
         G = nx.Graph()
@@ -22,18 +22,20 @@ def read_graph(file_name):
                     # Add edges to the graph
                     for target in targets:
                         G.add_edge(source, target)
-
+        # Return the graph G to main
         return G
+    # Throw error for when file is not found
     except FileNotFoundError:
         print(f"File '{file_name}' not found.")
         return None
+    # Throw error for when the program can't read the graph from given file
     except Exception as e:
         print(f"Error reading graph from '{file_name}': {e}")
         return None
 
 
+# Write the graph to an external file in adjacency list format
 def save_graph(G, file_name):
-    # Implement writing the graph to an external file in adjacency list format
     try:
         # Write the graph to the file in adjacency list format
         with open(file_name, 'w') as file:
@@ -41,47 +43,54 @@ def save_graph(G, file_name):
                 neighbors = ' '.join(G.neighbors(node))
                 file.write(f"{node} {neighbors}\n")
         print(f"Graph saved to '{file_name}' successfully.")
+    # Throw error when fail to save the graph
     except Exception as e:
         print(f"Error saving graph to '{file_name}': {e}")
 
 
+# Create an Erdos-Renyi random graph with n nodes and probability p = c+(ln(n)/ n)
 def create_random_graph(n, c):
-    # Implement creating an Erdos-Renyi random graph with n nodes and probability p = c/n
     try:
-        # Create an Erdos-Renyi random graph with sorted nodes
-        p = c + ln(n) / n
+        # Set up p
+        p = c + (ln(n) / n)
         nodes = [str(i) for i in range(n)]  # Generate node names as strings from '0' to 'n-1'
+        # Create an Erdos-Renyi graph with n and p
         G = nx.erdos_renyi_graph(n, p)
-        mapping = {old_node: new_node for old_node, new_node in
-                   zip(G.nodes(), nodes)}  # Create a mapping from old nodes to new nodes
-        G = nx.relabel_nodes(G, mapping)  # Relabel the nodes using the mapping
+        # Create a mapping from old nodes to new nodes
+        mapping = {old_node: new_node for old_node, new_node in zip(G.nodes(), nodes)}
+        # Relabel the nodes using the mapping
+        G = nx.relabel_nodes(G, mapping)
         print(f"Erdos-Renyi random graph with {n} nodes created successfully.")
+        # Return the graph G to main
         return G
     except Exception as e:
         print(f"Error creating random graph: {e}")
         return None
 
 
+# Find the shortest path between source and target nodes in graph G
 def shortest_path(G, source, target):
-    # Implement computing the shortest path between source and target nodes in graph G
     try:
         # Compute the shortest path
         path = nx.shortest_path(G, source=source, target=target)
         print(f"Shortest path from {source} to {target}: {path}")
         return path
+    # Throw error when there are no path between the source and target
     except nx.NetworkXNoPath:
         print(f"No path found from {source} to {target}.")
         return None
+    # Throw error when nodes are not found
     except nx.NodeNotFound:
         print(f"Node {source} or {target} not found in the graph.")
         return None
+    # Throw error when the program can't find the shortest path
     except Exception as e:
         print(f"Error computing shortest path: {e}")
         return None
 
 
+# Plot the graph G and highlighting the shortest path if provided
 def plot_graph(G, shortest=None):
-    # Implement plotting the graph G and highlighting the shortest path if provided
     # Create a spring layout for the graph
     pos = nx.spring_layout(G)
 
@@ -106,9 +115,11 @@ def plot_graph(G, shortest=None):
 
 
 def main():
+    # Global variables to temporary hold the G graph and shortest path
     shortest = None
     graph = None
 
+    # Loop until the user chose 'x' to exit
     while True:
         print("Menu:")
         print("1. Read a Graph")
@@ -147,7 +158,7 @@ def main():
             # Handle if graph is not defined or other error cases
 
         elif choice.lower() == "x":
-            break
+            return None
 
         else:
             print("Invalid choice. Please try again.")
