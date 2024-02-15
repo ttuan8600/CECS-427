@@ -52,7 +52,7 @@ def save_graph(G, file_name):
 def create_random_graph(n, c):
     try:
         # Set up p
-        p = c + (ln(n) / n)
+        p = c*(ln(n) / n)
         nodes = [str(i) for i in range(n)]  # Generate node names as strings from '0' to 'n-1'
         # Create an Erdos-Renyi graph with n and p
         G = nx.erdos_renyi_graph(n, p)
