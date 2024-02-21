@@ -1,6 +1,10 @@
+import random
 import networkx as nx
+import dwave_networkx as dnx
 import matplotlib.pyplot as plt
 from numpy import log as ln
+from dwave_networkx.algorithms import structural_imbalance
+from networkx.algorithms.assortativity import attribute_assortativity_coefficient
 
 
 # Read a graph from an external file in adjacency list format
@@ -99,6 +103,40 @@ def partition_graph(G, num_components):
     except Exception as e:
         print(f"Error partitioning graph: {e}")
         return None
+
+
+def assign_homophily_attributes(graph, p):
+    try:
+        # Assign colors (red or blue) to nodes independently with probability p
+        for node in graph.nodes():
+            color = "red" if random.random() < p else "blue"
+            graph.nodes[node]["color"] = color
+
+        # Check for assortativity (homophily)
+        assortativity = attribute_assortativity_coefficient(graph, "color")
+        print(f"Assortativity (homophily) coefficient: {assortativity}")
+
+    except ValueError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"Error assigning or validating attributes: {e}")
+
+
+def assign_balanced_graph_attributes(graph, p):
+    try:
+        # Assign signs (+ or -) to edges independently with probability p
+        for edge in graph.edges():
+            sign = "+" if random.random() < p else "-"
+            graph.edges[edge]["sign"] = sign
+
+        # Check if the graph is balanced
+        balanced = dnx.structural_imbalance(graph)
+        print(f"Is the graph balanced: {balanced}")
+
+    except ValueError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"Error assigning or validating attributes: {e}")
 
 
 # Plot the graph G and highlighting the shortest path if provided
@@ -256,6 +294,25 @@ def main():
                 print(f"Error: {e}")
             except Exception as e:
                 print(f"Error: {e}")
+
+        elif choice == "6":
+            print("Assign and validate Attributes:")
+            print("a. Homophily")
+            print("b. Balanced Graph")
+
+            p = float(input("Enter probability p: "))
+            if p < 0 or p > 1:
+                raise ValueError("Probability p must be between 0 and 1.")
+
+            sub = input("Enter your choice (a/b): ")
+            if sub == "a":
+                assign_homophily_attributes(graph, p)
+
+            elif sub == "b":
+                assign_balanced_graph_attributes(graph, p)
+
+            else:
+                print("Invalid sub-option. Please choose 'a' or 'b'.")
 
         elif choice.lower() == "x":
             return None
