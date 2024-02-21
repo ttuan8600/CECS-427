@@ -175,6 +175,9 @@ def main():
     shortest = None
     graph = None
     karate = None
+    plot_shortest_path = False
+    plot_cluster_coefficient = False
+    plot_neighborhood_overlap = False
     # Loop until the user chose 'x' to exit
     while True:
         print("Menu:")
@@ -280,6 +283,25 @@ def main():
                 print("Invalid choice. Please try again.")
 
         elif choice == "5":
+            print("Plotting Options:")
+            print("a. Shortest Path")
+            print("b. Cluster Coefficients")
+            print("c. Neighborhood Overlaps")
+            sub = input("Enter your choice (a/b/c): ")
+
+            if sub.lower() == "a":
+                plot_shortest_path = not plot_shortest_path
+            elif sub.lower() == "b":
+                plot_cluster_coefficient = not plot_cluster_coefficient
+            elif sub.lower() == "c":
+                plot_neighborhood_overlap = not plot_neighborhood_overlap
+            else:
+                print("Invalid choice. Please try again.")
+
+            if 'graph' in locals():
+                plot_graph(graph, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap)
+            else:
+                print("Error: Graph is not defined.")
             try:
                 # Check if graph and shortest path is defined yet
                 if 'graph' not in locals() or 'shortest' not in locals():
