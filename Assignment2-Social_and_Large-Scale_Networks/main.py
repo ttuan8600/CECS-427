@@ -286,6 +286,7 @@ def main():
                 try:
                     graph = nx.karate_club_graph()
                     karate = 1
+                    plot_graph(graph, karate)
                     print("Karate-Club Graph created successfully")
                 except Exception as e:
                     print(f"Error:{e}")
