@@ -170,6 +170,54 @@ def plot_graph(G, karate, shortest=None):
         plt.show()
 
 
+# def plot_graph(G, shortest=None, plot_shortest_path=False, plot_cluster_coefficient=False, plot_neighborhood_overlap=False):
+#     # Create a spring layout for the graph
+#     pos = nx.spring_layout(G)
+#
+#     # Draw the nodes
+#     node_sizes = []
+#     node_colors = []
+#     if plot_cluster_coefficient:
+#         cluster_coeffs = nx.clustering(G)
+#         cluster_min = min(cluster_coeffs.values())
+#         cluster_max = max(cluster_coeffs.values())
+#     for node in G.nodes():
+#         if plot_cluster_coefficient:
+#             cv = cluster_coeffs[node]
+#             pv = (cv - cluster_min) / (cluster_max - cluster_min)
+#             size = 300 + pv * 700  # Adjust size based on cluster coefficient
+#             color = (int(pv * 254), 254, 0)  # RGB color based on cluster coefficient
+#         else:
+#             size = 500
+#             color = 'lightblue'
+#         node_sizes.append(size)
+#         node_colors.append(color)
+#
+#     # Draw the edges
+#     nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=node_sizes)
+#     nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5)
+#
+#     # Highlight the shortest path if provided and option is enabled
+#     if shortest and plot_shortest_path:
+#         edges = [(shortest[i], shortest[i + 1]) for i in range(len(shortest) - 1)]
+#         nx.draw_networkx_edges(G, pos, edgelist=edges, width=2.0, alpha=0.9, edge_color='black', style='dashed')
+#
+#     # Highlight neighborhood overlap if option is enabled
+#     if plot_neighborhood_overlap:
+#         for node in G.nodes():
+#             neighbors = G.neighbors(node)
+#             for neighbor in neighbors:
+#                 if G.has_edge(node, neighbor):
+#                     nx.draw_networkx_edges(G, pos, edgelist=[(node, neighbor)], width=2.0, edge_color='red')
+#
+#     # Draw the labels
+#     nx.draw_networkx_labels(G, pos, font_size=12, font_family='sans-serif')
+#
+#     # Show the plot
+#     plt.title("Graph Visualization")
+#     plt.axis('off')
+#     plt.show()
+
 def main():
     # Global variables to temporary hold the G graph and shortest path
     shortest = None
