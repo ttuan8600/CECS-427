@@ -178,89 +178,86 @@ def assign_balanced_graph_attributes(G, p):
 
 # Plot the graph G and highlighting the shortest path if provided
 def plot_graph(G, karate, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap):
-    # Create a spring layout for the graph
-    pos = nx.spring_layout(G)
 
-    # check and show karate graph
+    # check if the graph is a karate graph
     if karate:
-        nx.draw_circular(G, with_labels=True)
-        plt.title("Graph Visualization")
-        plt.axis('off')
-        plt.show()
+        pos = nx.circular_layout(G)
     else:
-        # Draw the nodes
-        node_sizes = []
-        node_colors = []
+        pos = nx.spring_layout(G)
 
+    # Draw the nodes
+    node_sizes = []
+    node_colors = []
+
+    if plot_cluster_coefficient:
+        cluster_coeffs = nx.clustering(G)
+        cluster_min = min(cluster_coeffs.values())
+        cluster_max = max(cluster_coeffs.values())
+
+    for node in G.nodes():
         if plot_cluster_coefficient:
-            cluster_coeffs = nx.clustering(G)
-            cluster_min = min(cluster_coeffs.values())
-            cluster_max = max(cluster_coeffs.values())
+            cv = cluster_coeffs[node]
+            pv = (cv - cluster_min) / (cluster_max - cluster_min)
+            min_pixel = 200
+            max_pixel = 800
+            size = min_pixel + pv * (max_pixel - min_pixel)  # Adjust size based on cluster coefficient
 
-        for node in G.nodes():
-            if plot_cluster_coefficient:
-                cv = cluster_coeffs[node]
-                pv = (cv - cluster_min) / (cluster_max - cluster_min)
-                min_pixel = 200
-                max_pixel = 800
-                size = min_pixel + pv * (max_pixel - min_pixel)  # Adjust size based on cluster coefficient
+            # RGB color based on cluster coefficient
+            red = int(pv * 254)
+            green = 254
+            blue = 0
+            color = '#%02x%02x%02x' % (red, green, blue)
+        else:
+            size = 500
+            color = 'lightblue'
+        node_sizes.append(size)
+        node_colors.append(color)
 
-                # RGB color based on cluster coefficient
-                red = int(pv * 254)
-                green = 254
-                blue = 0
-                color = '#%02x%02x%02x' % (red, green, blue)
-            else:
-                size = 500
-                color = 'lightblue'
-            node_sizes.append(size)
-            node_colors.append(color)
+    # Draw the nodes and edges
+    nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=node_sizes)
+    nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5)
 
-        # Draw the nodes and edges
-        nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=node_sizes)
-        nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5)
+    edge_sizes = []
+    edge_colors = []
+    # Highlight neighborhood overlap if option is enabled
+    if plot_neighborhood_overlap:
+        overlaps = {}
+        for edge in G.edges():
+            src, dest = edge
+            src_neighbors = set(G.neighbors(src))
+            dest_neighbors = set(G.neighbors(dest))
+            overlap = len(src_neighbors.intersection(dest_neighbors))
+            overlaps[edge] = overlap
 
-        edge_sizes = []
-        edge_colors = []
-        # Highlight neighborhood overlap if option is enabled
-        if plot_neighborhood_overlap:
-            overlaps = {}
-            for edge in G.edges():
-                src, dest = edge
-                src_neighbors = set(G.neighbors(src))
-                dest_neighbors = set(G.neighbors(dest))
-                overlap = len(src_neighbors.intersection(dest_neighbors))
-                overlaps[edge] = overlap
+        overlap_min = min(overlaps.values())
+        overlap_max = max(overlaps.values())
+        for edge in G.edges():
+            pv = (overlaps[edge] - overlap_min) / (overlap_max - overlap_min)
+            # Adjust size of edges based on overlapping
+            min_size = 1
+            max_size = 10
+            edge_size = min_size + pv * (max_size - min_size)
+            # RGB color based on cluster coefficient
+            red = int(pv * 254)
+            green = 254
+            blue = 0
+            edge_color = '#%02x%02x%02x' % (red, green, blue)
+            edge_sizes.append(edge_size)
+            edge_colors.append(edge_color)
 
-            overlap_min = min(overlaps.values())
-            overlap_max = max(overlaps.values())
-            for edge in G.edges():
-                pv = (overlaps[edge] - overlap_min) / (overlap_max - overlap_min)
-                # Adjust size of edges based on overlapping
-                min_size = 1
-                max_size = 10
-                edge_size = min_size + pv * (max_size - min_size)
-                # RGB color based on cluster coefficient
-                red = int(pv * 254)
-                green = 254
-                blue = 0
-                edge_color = '#%02x%02x%02x' % (red, green, blue)
-                edge_sizes.append(edge_size)
-                edge_colors.append(edge_color)
+        nx.draw_networkx_edges(G, pos, width=edge_sizes, edge_color=edge_colors)
+    # Highlight the shortest path if provided and option is enabled
+    if shortest and plot_shortest_path:
+        edges = [(shortest[i], shortest[i + 1]) for i in range(len(shortest) - 1)]
+        nx.draw_networkx_edges(G, pos, edgelist=edges, width=2.0, alpha=0.9, edge_color='black', style='dashed')
 
-            nx.draw_networkx_edges(G, pos, width=edge_sizes, edge_color=edge_colors)
-        # Highlight the shortest path if provided and option is enabled
-        if shortest and plot_shortest_path:
-            edges = [(shortest[i], shortest[i + 1]) for i in range(len(shortest) - 1)]
-            nx.draw_networkx_edges(G, pos, edgelist=edges, width=2.0, alpha=0.9, edge_color='black', style='dashed')
+    # Draw the labels
+    nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif')
 
-        # Draw the labels
-        nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif')
-
-        # Show the plot
-        plt.title("Graph Visualization")
-        plt.axis('off')
-        plt.show()
+    # Show the plot
+    plt.title("Graph Visualization")
+    plt.axis('off')
+    plt.show()
 
 
 def main():
