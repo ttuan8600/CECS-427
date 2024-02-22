@@ -99,11 +99,17 @@ def shortest_path(G, source, target):
 
 def partition_graph(G, num_components):
     try:
-        for i in range(num_components):
+        cur_num_connected = nx.number_connected_components(G)
+        print(f"Graph has initially {cur_num_connected} connected components.")
+        edges_removed = 0
+        while cur_num_connected < num_components:
             edge_betweenness = nx.edge_betweenness_centrality(G)
             max_betweenness_edge = max(edge_betweenness, key=edge_betweenness.get)
             G.remove_edge(*max_betweenness_edge)
-        print(f"Graph removed {num_components} edges.")
+            edges_removed+=1
+            
+        print(f"Removed {edges_removed} edges")
+        print(f"Graph partitioned into {num_components} components.")
         return G
     except Exception as e:
         print(f"Error partitioning graph: {e}")
@@ -358,11 +364,7 @@ def main():
                     if 'graph' not in locals():
                         raise ValueError("Graph is not defined.")
                     num_components = int(input("Enter number of components: "))
-                    part = partition_graph(graph, num_components)
-                    if part is not None:
-                        pos = nx.spring_layout(part)
-                        nx.draw(part, pos, with_labels=True)
-                        plt.show()
+                    graph = partition_graph(graph, num_components)
                 except ValueError as e:
                     print(f"Error: {e}")
                 except Exception as e:
