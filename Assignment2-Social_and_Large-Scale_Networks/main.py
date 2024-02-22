@@ -62,13 +62,8 @@ def create_random_graph(n, c):
     try:
         # Set up p
         p = c * (ln(n) / n)
-        nodes = [str(i) for i in range(n)]  # Generate node names as strings from '0' to 'n-1'
         # Create an Erdos-Renyi graph with n and p
         G = nx.erdos_renyi_graph(n, p)
-        # Create a mapping from old nodes to new nodes
-        mapping = {old_node: new_node for old_node, new_node in zip(G.nodes(), nodes)}
-        # Relabel the nodes using the mapping
-        G = nx.relabel_nodes(G, mapping)
         print(f"Erdos-Renyi random graph with {n} nodes created successfully.")
         # Return the graph G to main
         return G
@@ -81,7 +76,7 @@ def create_random_graph(n, c):
 def shortest_path(G, source, target):
     try:
         # Compute the shortest path
-        path = nx.shortest_path(G, source=source, target=target)
+        path = nx.shortest_path(G, source=int(source), target=int(target))
         return path
     # Throw error when there are no path between the source and target
     except nx.NetworkXNoPath:
@@ -99,10 +94,10 @@ def shortest_path(G, source, target):
 
 def partition_graph(G, num_components):
     try:
-        cur_num_connected = nx.number_connected_components(G)
-        print(f"Graph has initially {cur_num_connected} connected components.")
+        # cur_num_connected = nx.number_connected_components(G)
+        # print(f"Graph has initially {cur_num_connected} connected components.")
         edges_removed = 0
-        while cur_num_connected < num_components:
+        while nx.number_connected_components(G) < num_components:
             edge_betweenness = nx.edge_betweenness_centrality(G)
             max_betweenness_edge = max(edge_betweenness, key=edge_betweenness.get)
             G.remove_edge(*max_betweenness_edge)
@@ -222,9 +217,8 @@ def plot_graph(G, karate, shortest, plot_shortest_path, plot_cluster_coefficient
         node_sizes.append(size)
         node_colors.append(color)
 
-    # Draw the nodes and edges
+    # Draw the nodes
     nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=node_sizes)
-    nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5)
 
     edge_sizes = []
     edge_colors = []
@@ -260,8 +254,11 @@ def plot_graph(G, karate, shortest, plot_shortest_path, plot_cluster_coefficient
         edges = [(shortest[i], shortest[i + 1]) for i in range(len(shortest) - 1)]
         nx.draw_networkx_edges(G, pos, edgelist=edges, width=2.0, alpha=0.9, edge_color='black', style='dashed')
 
+    # Draw the edges
+    nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5, edge_color='black')
+
     # Draw the labels
-    nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif')
+    nx.draw_networkx_labels(G, pos, font_size=8, font_family='sans-serif')
 
     # Show the plot
     plt.title("Graph Visualization")
