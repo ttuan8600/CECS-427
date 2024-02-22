@@ -382,10 +382,22 @@ def main():
             while sub.lower() != "g":
                 if sub.lower() == "a":
                     plot_shortest_path = not plot_shortest_path
+                    if plot_shortest_path:
+                        print("\n>> Shortest Path enabled!\n")
+                    else:
+                        print("\n>> Shortest Path disabled!\n")
                 elif sub.lower() == "b":
                     plot_cluster_coefficient = not plot_cluster_coefficient
+                    if plot_cluster_coefficient:
+                        print("\n>> Cluster Coefficients enabled!\n")
+                    else:
+                        print("\n>> Cluster Coefficients disabled!\n")
                 elif sub.lower() == "c":
                     plot_neighborhood_overlap = not plot_neighborhood_overlap
+                    if plot_neighborhood_overlap:
+                        print("\n>> Neighborhood Overlaps enabled!\n")
+                    else:
+                        print("\n>> Neighborhood Overlaps disabled!\n")
                 else:
                     print("Invalid choice. Please try again.")
 
@@ -415,13 +427,13 @@ def main():
                 p = float(input("Enter probability p (0-1): "))
                 if p < 0 or p > 1:
                     raise ValueError("Probability p must be between 0 and 1.")
-                graph = assign_homophily_attributes(graph, p)
+                assign_homophily_attributes(graph, p)
 
             elif sub == "b":
                 p = float(input("Enter probability p (0-1): "))
                 if p < 0 or p > 1:
                     raise ValueError("Probability p must be between 0 and 1.")
-                graph = assign_balanced_graph_attributes(graph, p)
+                assign_balanced_graph_attributes(graph, p)
 
             else:
                 print("Invalid sub-option. Please choose 'a' or 'b'.")
