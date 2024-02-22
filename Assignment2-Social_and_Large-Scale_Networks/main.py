@@ -1,6 +1,5 @@
 import random
 import networkx as nx
-import dwave_networkx as dnx
 import matplotlib.pyplot as plt
 from numpy import log as ln
 from dwave_networkx.algorithms import structural_imbalance
@@ -92,47 +91,75 @@ def shortest_path(G, source, target):
         return None
 
 
+def clustering_coefficients(G):
+    try:
+        cluster_coeffs = nx.clustering(G)
+        cluster_min = min(cluster_coeffs.values())
+        cluster_max = max(cluster_coeffs.values())
+
+        colors = [(cluster_coeffs[node] - cluster_min) / (cluster_max - cluster_min) for node in G.nodes()]
+        sizes = [100 + (cluster_coeffs[node] - cluster_min) / (cluster_max - cluster_min) * (500 - 100) for node in
+                 G.nodes()]
+
+        pos = nx.spring_layout(G)
+        plt.figure(figsize=(10, 8))
+        nx.draw(G, pos, with_labels=True, node_size=sizes, node_color=colors, cmap=plt.cm.Reds)
+        plt.show()
+    except Exception as exc:
+        print(str(exc))
+
+
 def partition_graph(G, num_components):
     try:
-        while nx.number_connected_components(G) > num_components:
+        for i in range(num_components):
             edge_betweenness = nx.edge_betweenness_centrality(G)
             max_betweenness_edge = max(edge_betweenness, key=edge_betweenness.get)
             G.remove_edge(*max_betweenness_edge)
-        print(f"Graph partitioned into {num_components} components.")
+        print(f"Graph removed {num_components} edges.")
         return G
     except Exception as e:
         print(f"Error partitioning graph: {e}")
         return None
 
 
-def assign_homophily_attributes(graph, p):
+def assign_homophily_attributes(G, p):
     try:
         # Assign colors (red or blue) to nodes independently with probability p
-        for node in graph.nodes():
+        for node in G.nodes():
             color = "red" if random.random() < p else "blue"
-            graph.nodes[node]["color"] = color
+            G.nodes[node]["color"] = color
 
         # Check for assortativity (homophily)
-        assortativity = attribute_assortativity_coefficient(graph, "color")
-        print(f"Assortativity (homophily) coefficient: {assortativity}")
-
+        assortativity = attribute_assortativity_coefficient(G, "color")
+        print(f"Assortativity coefficient: {assortativity}")
+        # Checking if assortativity is close to p
+        if abs(assortativity - p) < 0.1:  # Assuming a small threshold of 0.1
+            print(f"The test returns a value similar to p: {p}")
+        else:
+            print(f"The test returns a value different from p: {p}")
+        return G
     except ValueError as e:
         print(f"Error: {e}")
     except Exception as e:
         print(f"Error assigning or validating attributes: {e}")
 
 
-def assign_balanced_graph_attributes(graph, p):
+def assign_balanced_graph_attributes(G, p):
     try:
         # Assign signs (+ or -) to edges independently with probability p
-        for edge in graph.edges():
+        for edge in G.edges():
             sign = "+" if random.random() < p else "-"
-            graph.edges[edge]["sign"] = sign
+            G.edges[edge]["sign"] = sign
+
+        # Check for structural imbalance using dwave_networkx
+        frustrated_edges, colors = structural_imbalance(G)
 
         # Check if the graph is balanced
-        balanced = dnx.structural_imbalance(graph)
-        print(f"Is the graph balanced: {balanced}")
-
+        if len(frustrated_edges) == 0:
+            print("The graph is balanced.")
+        else:
+            print(f"The graph is not balanced. Number of frustrated edges: {len(frustrated_edges)}")
+        return G
     except ValueError as e:
         print(f"Error: {e}")
     except Exception as e:
@@ -140,89 +167,70 @@ def assign_balanced_graph_attributes(graph, p):
 
 
 # Plot the graph G and highlighting the shortest path if provided
-def plot_graph(G, karate, shortest=None):
-    if karate == 1:
-        nx.draw_circular(G, with_labels=True, node_color='lightblue', node_size=500)
+def plot_graph(G, karate, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap):
+    # Create a spring layout for the graph
+    pos = nx.spring_layout(G)
+
+    # Draw the nodes
+    node_sizes = []
+    node_colors = []
+
+    if plot_cluster_coefficient:
+        cluster_coeffs = nx.clustering(G)
+        cluster_min = min(cluster_coeffs.values())
+        cluster_max = max(cluster_coeffs.values())
+        for node in G.nodes():
+            if plot_cluster_coefficient:
+                cv = cluster_coeffs[node]
+                pv = (cv - cluster_min) / (cluster_max - cluster_min)
+                min_pixel = 300
+                max_pixel = 700
+                size = min_pixel + pv * (max_pixel - min_pixel)  # Adjust size based on cluster coefficient
+                color = (int(pv * 254), 254, 0)  # RGB color based on cluster coefficient
+            else:
+                size = 500
+                color = 'lightblue'
+            node_sizes.append(size)
+            node_colors.append(color)
+
+    # Draw the nodes and edges
+    nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=node_sizes)
+    nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5)
+
+    # Highlight the shortest path if provided and option is enabled
+    if shortest and plot_shortest_path:
+        edges = [(shortest[i], shortest[i + 1]) for i in range(len(shortest) - 1)]
+        nx.draw_networkx_edges(G, pos, edgelist=edges, width=2.0, alpha=0.9, edge_color='black', style='dashed')
+
+    # Highlight neighborhood overlap if option is enabled
+    if plot_neighborhood_overlap:
+        for node in G.nodes():
+            neighbors = G.neighbors(node)
+            for neighbor in neighbors:
+                if G.has_edge(node, neighbor):
+                    nx.draw_networkx_edges(G, pos, edgelist=[(node, neighbor)], width=2.0, edge_color='red')
+
+    # Draw the labels
+    nx.draw_networkx_labels(G, pos, font_size=12, font_family='sans-serif')
+
+    # check and show karate graph with features that are enabled
+    if karate:
+        nx.draw_circular(G, with_labels=True)
         plt.title("Graph Visualization")
         plt.axis('off')
         plt.show()
     else:
-        # Create a spring layout for the graph
-        pos = nx.spring_layout(G)
-
-        # Draw the nodes
-        nx.draw_networkx_nodes(G, pos, node_color='lightblue', node_size=500)
-
-        # Draw the edges
-        nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5)
-
-        # Highlight the shortest path if provided
-        if shortest:
-            edges = [(shortest[i], shortest[i + 1]) for i in range(len(shortest) - 1)]
-            nx.draw_networkx_edges(G, pos, edgelist=edges, width=2.0, alpha=0.9, edge_color='black', style='dashed')
-
-        # Draw the labels
-        nx.draw_networkx_labels(G, pos, font_size=12, font_family='sans-serif')
-
         # Show the plot
         plt.title("Graph Visualization")
         plt.axis('off')
         plt.show()
 
 
-# def plot_graph(G, shortest=None, plot_shortest_path=False, plot_cluster_coefficient=False, plot_neighborhood_overlap=False):
-#     # Create a spring layout for the graph
-#     pos = nx.spring_layout(G)
-#
-#     # Draw the nodes
-#     node_sizes = []
-#     node_colors = []
-#     if plot_cluster_coefficient:
-#         cluster_coeffs = nx.clustering(G)
-#         cluster_min = min(cluster_coeffs.values())
-#         cluster_max = max(cluster_coeffs.values())
-#     for node in G.nodes():
-#         if plot_cluster_coefficient:
-#             cv = cluster_coeffs[node]
-#             pv = (cv - cluster_min) / (cluster_max - cluster_min)
-#             size = 300 + pv * 700  # Adjust size based on cluster coefficient
-#             color = (int(pv * 254), 254, 0)  # RGB color based on cluster coefficient
-#         else:
-#             size = 500
-#             color = 'lightblue'
-#         node_sizes.append(size)
-#         node_colors.append(color)
-#
-#     # Draw the edges
-#     nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=node_sizes)
-#     nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5)
-#
-#     # Highlight the shortest path if provided and option is enabled
-#     if shortest and plot_shortest_path:
-#         edges = [(shortest[i], shortest[i + 1]) for i in range(len(shortest) - 1)]
-#         nx.draw_networkx_edges(G, pos, edgelist=edges, width=2.0, alpha=0.9, edge_color='black', style='dashed')
-#
-#     # Highlight neighborhood overlap if option is enabled
-#     if plot_neighborhood_overlap:
-#         for node in G.nodes():
-#             neighbors = G.neighbors(node)
-#             for neighbor in neighbors:
-#                 if G.has_edge(node, neighbor):
-#                     nx.draw_networkx_edges(G, pos, edgelist=[(node, neighbor)], width=2.0, edge_color='red')
-#
-#     # Draw the labels
-#     nx.draw_networkx_labels(G, pos, font_size=12, font_family='sans-serif')
-#
-#     # Show the plot
-#     plt.title("Graph Visualization")
-#     plt.axis('off')
-#     plt.show()
-
 def main():
     # Global variables to temporary hold the G graph and shortest path
     shortest = None
     graph = None
-    karate = None
+    karate = False
     plot_shortest_path = False
     plot_cluster_coefficient = False
     plot_neighborhood_overlap = False
@@ -285,8 +293,7 @@ def main():
             elif sub.lower() == "b":
                 try:
                     graph = nx.karate_club_graph()
-                    karate = 1
-                    plot_graph(graph, karate)
+                    karate = True
                     print("Karate-Club Graph created successfully")
                 except Exception as e:
                     print(f"Error:{e}")
@@ -320,9 +327,11 @@ def main():
                     if 'graph' not in locals():
                         raise ValueError("Graph is not defined.")
                     num_components = int(input("Enter number of components: "))
-                    new_graph = partition_graph(graph, num_components)
-                    if new_graph is not None:
-                        plot_graph(new_graph, karate)
+                    part = partition_graph(graph, num_components)
+                    if part is not None:
+                        pos = nx.spring_layout(part)
+                        nx.draw(part, pos, with_labels=True)
+                        plt.show()
                 except ValueError as e:
                     print(f"Error: {e}")
                 except Exception as e:
@@ -336,29 +345,27 @@ def main():
             print("a. Shortest Path")
             print("b. Cluster Coefficients")
             print("c. Neighborhood Overlaps")
-            sub = input("Enter your choice (a/b/c): ")
+            print("g. Plot the graph")
+            sub = input("Enter your choice (a/b/c/g): ")
 
-            if sub.lower() == "a":
-                plot_shortest_path = not plot_shortest_path
-            elif sub.lower() == "b":
-                plot_cluster_coefficient = not plot_cluster_coefficient
-            elif sub.lower() == "c":
-                plot_neighborhood_overlap = not plot_neighborhood_overlap
-            else:
-                print("Invalid choice. Please try again.")
-
-            if 'graph' in locals():
-                plot_graph(graph, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap)
-            else:
-                print("Error: Graph is not defined.")
+            while sub.lower() != "g":
+                if sub.lower() == "a":
+                    plot_shortest_path = not plot_shortest_path
+                if sub.lower() == "b":
+                    plot_cluster_coefficient = not plot_cluster_coefficient
+                if sub.lower() == "c":
+                    plot_neighborhood_overlap = not plot_neighborhood_overlap
+                else:
+                    print("Invalid choice. Please try again.")
             try:
                 # Check if graph and shortest path is defined yet
                 if 'graph' not in locals() or 'shortest' not in locals():
                     raise ValueError("Graph or shortest path is not defined.")
-                plot_graph(graph, karate, shortest)
+                plot_graph(graph, karate, shortest, plot_shortest_path, plot_cluster_coefficient,
+                           plot_neighborhood_overlap)
                 print("Graph plotted.")
                 # Reset shortest path prevent errors with other graph
-                karate = None
+                karate = False
                 shortest = None
             # Throw any other errors
             except ValueError as e:
@@ -370,17 +377,18 @@ def main():
             print("Assign and validate Attributes:")
             print("a. Homophily")
             print("b. Balanced Graph")
-
-            p = float(input("Enter probability p: "))
-            if p < 0 or p > 1:
-                raise ValueError("Probability p must be between 0 and 1.")
-
             sub = input("Enter your choice (a/b): ")
             if sub == "a":
-                assign_homophily_attributes(graph, p)
+                p = float(input("Enter probability p (0-1): "))
+                if p < 0 or p > 1:
+                    raise ValueError("Probability p must be between 0 and 1.")
+                graph = assign_homophily_attributes(graph, p)
 
             elif sub == "b":
-                assign_balanced_graph_attributes(graph, p)
+                p = float(input("Enter probability p (0-1): "))
+                if p < 0 or p > 1:
+                    raise ValueError("Probability p must be between 0 and 1.")
+                graph = assign_balanced_graph_attributes(graph, p)
 
             else:
                 print("Invalid sub-option. Please choose 'a' or 'b'.")
