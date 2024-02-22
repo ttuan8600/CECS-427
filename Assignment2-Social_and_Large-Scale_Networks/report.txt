@@ -1,0 +1,21 @@
+Assignment Report
+Student Name: Twan Tran
+Student ID: @029136612
+Course: CECS 427
+
+Approach:
+The provided code implements various functionalities for working with graphs using the NetworkX library in Python. Here's a summary of each function's purpose:
+
+create_random_graph(n, c): Creates an Erdos-Renyi random graph with n nodes and a probability p = c + (ln(n) / n). It handles exceptions when creating the graph.
+
+plot_graph(G, shortest=None): Plots the graph G using a spring layout and optionally highlights the shortest path if provided.
+
+assign_and_validate_attributes(G, p, sampler): Assigns attributes to the graph G and validates them. It assigns colors to nodes based on homophily and signs to edges based on balance. It uses the dwave_networkx library to analyze the graphs for balance.
+
+Additional Features Implemented:
+Used try-except blocks to handle exceptions gracefully and provide meaningful error messages.
+Implemented a menu-based user interface (main function) to interactively perform graph operations.
+Used global variables shortest and graph to store the current shortest path and graph, respectively, to maintain state across menu options.
+Enhanced the plot_graph function to highlight the shortest path on the graph if provided.
+
+Overall, the code is now robust and user-friendly, providing a solid foundation for further enhancements and applications in graph manipulation.
