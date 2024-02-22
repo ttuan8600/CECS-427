@@ -116,7 +116,7 @@ def partition_graph(G, num_components):
         return None
 
 
-def assign_homophily_attributes(G, p):
+def assign_homophily_attributes(G, p, karate):
     try:
         # Assign colors (red or blue) to nodes independently with probability p
         assigned_colors = {node: 'red' if random.random() < p else 'blue' for node in G.nodes()}
@@ -132,7 +132,12 @@ def assign_homophily_attributes(G, p):
             print(f"The test returns a value similar to p: {p}")
         else:
             print(f"The test returns a value different from p: {p}")
-        pos = nx.spring_layout(G)
+            
+        if karate:
+            pos = nx.circular_layout(G)
+        else:
+            pos = nx.spring_layout(G)
+            
         nx.draw(G, pos, with_labels=True, node_color=color_map)
         plt.show()
     except ValueError as e:
@@ -141,7 +146,7 @@ def assign_homophily_attributes(G, p):
         print(f"Error assigning or validating attributes: {e}")
 
 
-def assign_balanced_graph_attributes(G, p):
+def assign_balanced_graph_attributes(G, p, karate):
     try:
         # Assign signs (+ or -) to edges independently with probability p
         assigned_signs = {edge: 1 if random.random() < p else -1 for edge in G.edges()}
@@ -161,7 +166,11 @@ def assign_balanced_graph_attributes(G, p):
         else:
             print(f"The graph is not balanced. Number of frustrated edges: {len(frustrated_edges)}")
 
-        pos = nx.spring_layout(G)
+        if karate:
+            pos = nx.circular_layout(G)
+        else:
+            pos = nx.spring_layout(G)
+            
         nx.draw_networkx_nodes(G, pos, node_color='lightblue')
         nx.draw_networkx_labels(G, pos)
         nx.draw_networkx_edges(G, pos, width=1.5)
@@ -290,6 +299,9 @@ def main():
                     print("Error: Unable to read graph from file.")
                 else:
                     print("Graph successfully read.")
+                # Reset shortest path prevent errors with other graph
+                karate = False
+                shortest = None
             # Throw any other errors
             except Exception as e:
                 print(f"Error: {e}")
@@ -318,6 +330,9 @@ def main():
                     if n <= 0 or c <= 0:
                         raise ValueError("Invalid inputs. Number of nodes n and parameter c must be positive.")
                     graph = create_random_graph(n, c)
+                    # Reset shortest path prevent errors with other graph
+                    karate = False
+                    shortest = None
                 # Throw any other errors
                 except ValueError as e:
                     print(f"Error: {e}")
@@ -328,6 +343,7 @@ def main():
                 try:
                     graph = nx.karate_club_graph()
                     karate = True
+                    shortest = None
                     print("Karate-Club Graph created successfully")
                 except Exception as e:
                     print(f"Error:{e}")
@@ -361,7 +377,8 @@ def main():
                     if 'graph' not in locals():
                         raise ValueError("Graph is not defined.")
                     num_components = int(input("Enter number of components: "))
-                    graph = partition_graph(graph, num_components)
+                    part = partition_graph(graph, num_components)
+                    graph = part
                 except ValueError as e:
                     print(f"Error: {e}")
                 except Exception as e:
@@ -408,9 +425,6 @@ def main():
                 plot_graph(graph, karate, shortest, plot_shortest_path, plot_cluster_coefficient,
                            plot_neighborhood_overlap)
                 print("Graph plotted.")
-                # Reset shortest path prevent errors with other graph
-                karate = False
-                shortest = None
             # Throw any other errors
             except ValueError as e:
                 print(f"Error: {e}")
@@ -426,13 +440,13 @@ def main():
                 p = float(input("Enter probability p (0-1): "))
                 if p < 0 or p > 1:
                     raise ValueError("Probability p must be between 0 and 1.")
-                assign_homophily_attributes(graph, p)
+                assign_homophily_attributes(graph, p, karate)
 
             elif sub == "b":
                 p = float(input("Enter probability p (0-1): "))
                 if p < 0 or p > 1:
                     raise ValueError("Probability p must be between 0 and 1.")
-                assign_balanced_graph_attributes(graph, p)
+                assign_balanced_graph_attributes(graph, p, karate)
 
             else:
                 print("Invalid sub-option. Please choose 'a' or 'b'.")
