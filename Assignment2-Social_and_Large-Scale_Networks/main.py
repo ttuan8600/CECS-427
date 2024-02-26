@@ -8,7 +8,7 @@ from dwave_networkx.algorithms import structural_imbalance
 from networkx.algorithms.assortativity import attribute_assortativity_coefficient
 
 sampler = neal.SimulatedAnnealingSampler()
-dnx.set_default_sampler(sampler)
+dnx.set_default_sampler(sampler)  # set default sampler
 
 
 # Read a graph from an external file in adjacency list format
