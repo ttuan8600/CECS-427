@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from dwave_networkx.algorithms import structural_imbalance
 from networkx.algorithms.assortativity import attribute_assortativity_coefficient
 
-
 sampler = neal.SimulatedAnnealingSampler()
 dnx.set_default_sampler(sampler)
 
@@ -101,8 +100,8 @@ def partition_graph(G, num_components):
             edge_betweenness = nx.edge_betweenness_centrality(G)
             max_betweenness_edge = max(edge_betweenness, key=edge_betweenness.get)
             G.remove_edge(*max_betweenness_edge)
-            edges_removed+=1
-            
+            edges_removed += 1
+
         print(f"Removed {edges_removed} edges")
         print(f"Graph partitioned into {num_components} components.")
         return G
@@ -127,12 +126,12 @@ def assign_homophily_attributes(G, p, karate):
             print(f"The test returns a value similar to p: {p}")
         else:
             print(f"The test returns a value different from p: {p}")
-            
+
         if karate:
             pos = nx.circular_layout(G)
         else:
             pos = nx.spring_layout(G)
-            
+
         nx.draw(G, pos, with_labels=True, node_color=color_map)
         plt.show()
     except ValueError as e:
@@ -165,12 +164,13 @@ def assign_balanced_graph_attributes(G, p, karate):
             pos = nx.circular_layout(G)
         else:
             pos = nx.spring_layout(G)
-            
+
         nx.draw_networkx_nodes(G, pos, node_color='lightblue')
         nx.draw_networkx_labels(G, pos)
         nx.draw_networkx_edges(G, pos, width=1.5)
         nx.draw_networkx_edge_labels(G, pos, edge_labels=pos_labels, font_color='red', font_weight='bold', font_size=12)
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=neg_labels, font_color='blue', font_weight='bold', font_size=12)
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=neg_labels, font_color='blue', font_weight='bold',
+                                     font_size=12)
         plt.title("Graph Visualization")
         plt.axis('off')
         plt.show()
@@ -182,7 +182,6 @@ def assign_balanced_graph_attributes(G, p, karate):
 
 # Plot the graph G and highlighting the shortest path if provided
 def plot_graph(G, karate, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap):
-
     # check if the graph is a karate graph
     if karate:
         pos = nx.circular_layout(G)
@@ -266,6 +265,10 @@ def plot_graph(G, karate, shortest, plot_shortest_path, plot_cluster_coefficient
     plt.show()
 
 
+def create_karate_graph():
+    return nx.karate_club_graph()
+
+
 def main():
     # Global variables to temporary hold the G graph and shortest path
     shortest = None
@@ -338,7 +341,7 @@ def main():
 
             elif sub.lower() == "b":
                 try:
-                    graph = nx.karate_club_graph()
+                    graph = create_karate_graph()
                     karate = True
                     shortest = None
                     print("Karate-Club Graph created successfully")
