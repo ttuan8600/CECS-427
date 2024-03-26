@@ -1,14 +1,6 @@
-import neal
-import random
 import networkx as nx
 from numpy import log as ln
-import dwave_networkx as dnx
 import matplotlib.pyplot as plt
-from dwave_networkx.algorithms import structural_imbalance
-from networkx.algorithms.assortativity import attribute_assortativity_coefficient
-
-sampler = neal.SimulatedAnnealingSampler()
-dnx.set_default_sampler(sampler)  # set default sampler
 
 
 # Read a graph from an external file in adjacency list format
@@ -46,8 +38,6 @@ def read_weighted_digraph(file_name):
     try:
         # Create an empty graph
         G = nx.DiGraph()
-
-        # Read the adjacency list from the file
         with open(file_name, 'r') as file:
             for line in file:
                 parts = line.strip().split()
@@ -65,6 +55,7 @@ def read_weighted_digraph(file_name):
     except Exception as e:
         print(f"Error reading graph from '{file_name}': {e}")
         return None
+
 
 # Write the graph to an external file in adjacency list format
 def save_graph(G, file_name):
@@ -124,7 +115,7 @@ def partition_graph(G, num_components):
         # cur_num_connected = nx.number_connected_components(G)
         # print(f"Graph has initially {cur_num_connected} connected components.")
         edges_removed = 0
-        while nx.number_connected_components(G) < num_components:
+        while nx.number_weakly_connected_components(G) < num_components:
             edge_betweenness = nx.edge_betweenness_centrality(G)
             max_betweenness_edge = max(edge_betweenness, key=edge_betweenness.get)
             G.remove_edge(*max_betweenness_edge)
@@ -153,6 +144,14 @@ def find_equilibrium(G, n, source, destination):
 
 # Plot the graph G and highlighting the shortest path if provided
 def plot_graph(G, karate, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap):
+    if isinstance(G, nx.DiGraph):
+        pos = nx.spring_layout(G)
+        nx.draw(G, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=10, font_color='black',
+                font_weight='bold')
+        edge_labels = {(u, v): f"{d['weight']}" for u, v, d in G.edges(data=True)}
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+        plt.title("Directed Graph Visualization")
+        plt.show()
     # check if the graph is a karate graph
     if karate:
         pos = nx.circular_layout(G)
@@ -422,8 +421,15 @@ def main():
                 # Check if graph and shortest path is defined yet
                 if 'graph' not in locals() or 'shortest' not in locals():
                     raise ValueError("Graph or shortest path is not defined.")
-                plot_graph(graph, karate, shortest, plot_shortest_path, plot_cluster_coefficient,
-                           plot_neighborhood_overlap)
+                pos = nx.spring_layout(graph)
+                nx.draw(graph, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=10, font_color='black',
+                        font_weight='bold')
+                edge_labels = {(u, v): f"{d['weight']}" for u, v, d in graph.edges(data=True)}
+                nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels)
+                plt.title("Directed Graph Visualization")
+                plt.show()
+                # plot_graph(graph, karate, shortest, plot_shortest_path, plot_cluster_coefficient,
+                #            plot_neighborhood_overlap)
                 print("Graph plotted.")
             # Throw any other errors
             except ValueError as e:
