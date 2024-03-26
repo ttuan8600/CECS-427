@@ -130,14 +130,12 @@ def partition_graph(G, num_components):
 
 
 def find_equilibrium(G, n, source, destination):
-    # Calculate the shortest paths for all pairs of nodes
     all_shortest_paths = dict(nx.all_pairs_dijkstra_path(G))
 
-    # Calculate the social optimum
-    social_optimum = sum([len(all_shortest_paths[source][destination]) - 1 for _ in range(n)])
+    social_optimum = sum([sum(edge[1]) for edge in nx.get_edge_attributes(G, 'weight').values()]) * n
 
-    # Calculate the Nash equilibrium
-    nash_equilibrium = len(all_shortest_paths[source][destination]) - 1
+    shortest_paths = all_shortest_paths[source][destination]
+    nash_equilibrium = sum([edge[1][0] for edge in nx.get_edge_attributes(G.subgraph(shortest_paths).copy(), 'weight').values()])
 
     return social_optimum, nash_equilibrium
 
@@ -379,6 +377,7 @@ def main():
                     source = int(input("Enter the initial node: "))
                     destination = int(input("Enter the destination node: "))
                     social_optimum, nash_equilibrium = find_equilibrium(graph, n, source, destination)
+                    print(social_optimum, nash_equilibrium)
                 except ValueError as e:
                     print(f"Error: {e}")
                 except Exception as e:
