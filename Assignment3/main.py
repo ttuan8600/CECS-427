@@ -134,7 +134,9 @@ def partition_graph(G, num_components):
 
 def find_equilibrium(G, n, source, destination, weights):
     G = nx.DiGraph()
-    G.add_edges_from(weights)
+    for edge in weights:
+        u, v, weight = edge
+        G.add_edge(u, v, weight=weight)
 
     all_shortest_paths = dict(nx.all_pairs_dijkstra_path(G))
 

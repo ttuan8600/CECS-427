@@ -1,0 +1,24 @@
+Assignment Report - Game Theory
+Student Name: Twan Tran
+Student ID: @029136612
+Course: CECS 427
+
+Approach:
+The provided code implements various functionalities for working with graphs using the NetworkX library in Python. Here's a summary of each function's purpose:
+
+1. read_weighted_digraph(file_name):
+This function reads a weighted directed graph from a file. The file is expected to have lines in the format source target a, b, where a and b represent the polynomial factor (a x + b) for the edge weight. For example, given a line 0 1 2 0, the edge from node 0 to node 1 will have a weight of 2x + 0.
+
+2. save_graph(G, file_name):
+This function checks if the graph in memory is unidirectional or directional and saves it accordingly. It's not entirely clear from the description how the function distinguishes between unidirectional and directional graphs, as these terms are typically used interchangeably with directed and undirected graphs, respectively.
+
+3. find_equilibrium(G, n, source, destination, weights):
+This function aims to find the Nash equilibrium and social optimal when n drivers move from a source to a destination node in the graph. It calculates these values and plots the graph with the computed values. However, the specific implementation details, such as how the Nash equilibrium and social optimal are calculated, are not provided in the description.
+
+4. plot_digraph(G, weights):
+This function is presumably intended to plot the directed graph. However, there seems to be a discrepancy in the description, as the function is labeled as "Plot the Digraph" but is also mentioned in the context of Assignment 3, which involves finding the Nash equilibrium and social optimal. It's unclear how this function relates to the other functions and the overall task of finding equilibrium and optimality.
+
+Challenges:
+There were difficulties in calculating the travel equilibrium and social optimality. This could be due to various reasons, such as incomplete or incorrect implementation, lack of clarity in the requirements, or insufficient understanding of the concepts involved. Further details on the specific challenges faced would be needed to provide more targeted assistance.
+
+Overall, the provided functions appear to form part of a larger task related to analyzing and optimizing traffic flow in a directed graph. However, more information and clarification are needed to fully understand and address any issues or challenges encountered.
