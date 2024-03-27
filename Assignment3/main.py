@@ -46,9 +46,9 @@ def read_weighted_digraph(file_name):
                 target = int(parts[1])
                 a = int(parts[2])
                 b = int(parts[3])
-                G.add_edge(source, target)
-                weights.append((a, b))
-        print(weights)
+                G.add_edge(source, target, weight=b)
+                weights.append((source, target, (a, b)))
+        # print(weights)
         return G, weights
     # Throw error for when file is not found
     except FileNotFoundError:
@@ -132,25 +132,25 @@ def partition_graph(G, num_components):
         return None
 
 
-def find_equilibrium(G, n, source, destination):
+def find_equilibrium(G, n, source, destination, weights):
+    G = nx.DiGraph()
+    G.add_edges_from(weights)
+
     all_shortest_paths = dict(nx.all_pairs_dijkstra_path(G))
 
-    social_optimum = sum([sum(edge[1]) for edge in nx.get_edge_attributes(G, 'weight').values()]) * n
+    social_optimum = sum([(edge[1][0] + edge[1][1]) for edge in nx.get_edge_attributes(G, 'weight').items()]) * n
 
     shortest_paths = all_shortest_paths[source][destination]
-    nash_equilibrium = sum([edge[1][0] for edge in nx.get_edge_attributes(G.subgraph(shortest_paths).copy(), 'weight').values()])
+    nash_equilibrium = sum([(edge[2][0]) for edge in G.subgraph(shortest_paths).edges(data='weight')])
 
     return social_optimum, nash_equilibrium
 
 
 def plot_digraph(G, weights):
     pos = nx.spring_layout(G)
-    nx.draw(G, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=10, font_color='black',
-            font_weight='bold')
+    nx.draw(G, pos, with_labels=True, node_size=700, node_color='lightblue', font_size=12, font_color='black')
 
-    labels = None
-    for u, v in weights:
-        labels = f"{weights[u][v]['a']}x + {weights[u][v]['b']}"
+    labels = {(u, v): f"{w[0]}x + {w[1]}" for u, v, w in weights}
 
     nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
     plt.title("Directed Graph Visualization")
@@ -394,7 +394,7 @@ def main():
                     n = int(input("Enter number of drivers: "))
                     source = int(input("Enter the initial node: "))
                     destination = int(input("Enter the destination node: "))
-                    social_optimum, nash_equilibrium = find_equilibrium(graph, n, source, destination)
+                    social_optimum, nash_equilibrium = find_equilibrium(graph, n, source, destination, weights)
                     print(social_optimum, nash_equilibrium)
                 except ValueError as e:
                     print(f"Error: {e}")
