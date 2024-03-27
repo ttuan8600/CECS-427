@@ -140,6 +140,10 @@ def find_equilibrium(G, n, source, destination):
     return social_optimum, nash_equilibrium
 
 
+def plot_digraph(G, weight):
+    
+
+
 # Plot the graph G and highlighting the shortest path if provided
 def plot_graph(G, karate, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap):
     if isinstance(G, nx.DiGraph):
