@@ -37,6 +37,7 @@ def read_graph(file_name):
 def read_weighted_digraph(file_name):
     try:
         # Create an empty graph
+        weights = list()
         G = nx.DiGraph()
         with open(file_name, 'r') as file:
             for line in file:
@@ -45,8 +46,10 @@ def read_weighted_digraph(file_name):
                 target = int(parts[1])
                 a = int(parts[2])
                 b = int(parts[3])
-                G.add_edge(source, target, weight=(a, b))
-        return G
+                G.add_edge(source, target)
+                weights.append((a, b))
+        print(weights)
+        return G, weights
     # Throw error for when file is not found
     except FileNotFoundError:
         print(f"File '{file_name}' not found.")
@@ -140,8 +143,18 @@ def find_equilibrium(G, n, source, destination):
     return social_optimum, nash_equilibrium
 
 
-def plot_digraph(G, weight):
-    
+def plot_digraph(G, weights):
+    pos = nx.spring_layout(G)
+    nx.draw(G, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=10, font_color='black',
+            font_weight='bold')
+
+    labels = None
+    for u, v in weights:
+        labels = f"{weights[u][v]['a']}x + {weights[u][v]['b']}"
+
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+    plt.title("Directed Graph Visualization")
+    plt.show()
 
 
 # Plot the graph G and highlighting the shortest path if provided
@@ -249,6 +262,7 @@ def main():
     plot_shortest_path = False
     plot_cluster_coefficient = False
     plot_neighborhood_overlap = False
+    weights = None
     # Loop until the user chose 'x' to exit
     while True:
         print("Menu:")
@@ -281,7 +295,7 @@ def main():
         elif choice == "2":
             try:
                 file_name = input("Enter file name: ")
-                graph = read_weighted_digraph(file_name)
+                graph, weights = read_weighted_digraph(file_name)
                 # Check if the graph exist
                 if graph is None:
                     print("Error: Unable to read graph from file.")
@@ -424,13 +438,7 @@ def main():
                 # Check if graph and shortest path is defined yet
                 if 'graph' not in locals() or 'shortest' not in locals():
                     raise ValueError("Graph or shortest path is not defined.")
-                pos = nx.spring_layout(graph)
-                nx.draw(graph, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=10, font_color='black',
-                        font_weight='bold')
-                edge_labels = {(u, v): f"{d['weight']}" for u, v, d in graph.edges(data=True)}
-                nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels)
-                plt.title("Directed Graph Visualization")
-                plt.show()
+                plot_digraph(graph, weights)
                 # plot_graph(graph, karate, shortest, plot_shortest_path, plot_cluster_coefficient,
                 #            plot_neighborhood_overlap)
                 print("Graph plotted.")
