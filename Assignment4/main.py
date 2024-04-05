@@ -42,6 +42,7 @@ def read_graph(file_name):
         return None
 
 
+# Read a Digraph
 def read_weighted_digraph(file_name):
     try:
         # Create an empty graph
@@ -65,6 +66,7 @@ def read_weighted_digraph(file_name):
     except Exception as e:
         print(f"Error reading graph from '{file_name}': {e}")
         return None
+
 
 # Write the graph to an external file in adjacency list format
 def save_graph(G, file_name):
@@ -97,6 +99,41 @@ def create_random_graph(n, c):
     except Exception as e:
         print(f"Error creating random graph: {e}")
         return None
+
+
+# Create a karate graph
+def create_karate_graph():
+    # Create the Karate Club graph
+    karate_graph = nx.karate_club_graph()
+
+    # Plot the graph
+    pos = nx.spring_layout(karate_graph)
+    nx.draw(karate_graph, pos, with_labels=True, node_color='lightblue', edge_color='gray')
+    plt.title("Karate Club Graph")
+    plt.show()
+
+
+# Creates a random bipartite graph with node sets A and B and edge (u, v) exists with probability p where u in A and v in B.def create_bipartite_graph(n, m, p):
+def create_bipartite_graph(n, m, p):
+    G = nx.Graph()
+    G.add_nodes_from(range(n), bipartite=0)  # Set nodes in A to bipartite 0
+    G.add_nodes_from(range(n, n + m), bipartite=1)  # Set nodes in B to bipartite 1
+    for u in range(n):
+        for v in range(n, n + m):
+            if random.random() < p:
+                G.add_edge(u, v)
+    return G
+
+
+# Market clearing with the given file format.
+def market_clearing(filename):
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+        n = int(lines[0].split()[0])
+        prices = list(map(int, lines[1].split(',')))
+        valuations = [list(map(int, line.split(','))) for line in lines[2:]]
+
+    return n, prices, valuations
 
 
 # Find the shortest path between source and target nodes in graph G
@@ -151,11 +188,54 @@ def find_equilibrium(G, n, source, destination):
     return social_optimum, nash_equilibrium
 
 
+# Computes the perfect matching in the given graph
+def compute_perfect_matching(graph):
+    matching = nx.bipartite.maximum_matching(graph)
+    return matching
+
+
+# Compute the preferred-seller graph and output the final assignment (price and payoff of each buyer)
+def compute_preferred_seller(n, prices, valuations):
+    assignments = dict()
+    remaining_houses = set(range(n))
+    remaining_buyers = set(range(n))
+    while remaining_buyers:
+        buyer_to_preferred_seller = {}
+        matched_houses = set()
+
+        for buyer in remaining_buyers:
+            max_payoff = -float('inf')
+            preferred_seller = None
+
+            for house in remaining_houses:
+                payoff = valuations[buyer][house] - prices[house]
+                if payoff > max_payoff:
+                    max_payoff = payoff
+                    preferred_seller = house
+
+            buyer_to_preferred_seller[buyer] = preferred_seller
+            print(f"Buyer_{buyer + 1}'s preferred seller: House_{preferred_seller + 1} with a payoff of {max_payoff}.")
+
+        max_buyer_payoff = max(buyer_to_preferred_seller.keys(), key=(
+            lambda k: valuations[k][buyer_to_preferred_seller[k]] - prices[buyer_to_preferred_seller[k]]))
+        print(f"The buyer with the maximum payoff for their preferred seller is: Buyer_{max_buyer_payoff + 1}")
+
+        for buyer, house in buyer_to_preferred_seller.items():
+            if house is not None and house not in matched_houses:
+                assignments[buyer] = {'house': house, 'payoff': valuations[buyer][house] - prices[house]}
+                remaining_houses.remove(house)
+                remaining_buyers.remove(buyer)
+                matched_houses.add(house)
+
+    return assignments
+
+
 # Plot the graph G and highlighting the shortest path if provided
-def plot_graph(G, karate, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap):
+def plot_graph(G, bipartite, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap):
     # check if the graph is a karate graph
-    if karate:
-        pos = nx.circular_layout(G)
+    if bipartite:
+        nx.draw(G, with_labels=True)
+        plt.show()
     else:
         pos = nx.spring_layout(G)
 
@@ -236,15 +316,25 @@ def plot_graph(G, karate, shortest, plot_shortest_path, plot_cluster_coefficient
     plt.show()
 
 
-def create_karate_graph():
-    return nx.karate_club_graph()
+# Plot the preferred seller graph
+def plot_preferred_seller_graph(assignments):
+    G = nx.Graph()
+    for buyer, assignment in assignments.items():
+        G.add_edge(f"Buyer_{buyer + 1}", f"House_{assignment['house'] + 1}", payoff=assignment['payoff'])
+
+    pos = nx.spring_layout(G)
+    nx.draw(G, pos, with_labels=True)
+    edge_labels = nx.get_edge_attributes(G, 'payoff')
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+    plt.show()
 
 
 def main():
     # Global variables to temporary hold the G graph and shortest path
     shortest = None
     graph = None
-    karate = False
+    assignments = None
+    n, prices, valuations = None, None, None
     plot_shortest_path = False
     plot_cluster_coefficient = False
     plot_neighborhood_overlap = False
@@ -308,7 +398,9 @@ def main():
             print("What type of graph:")
             print("A. Random Erdos-Renyi Graph")
             print("B. Karate-Club Graph")
-            sub = input("Enter your choice (a/b): ")
+            print("C. Bipartite Graph")
+            print("D. Market-clearing")
+            sub = input("Enter your choice (a/b/c): ")
             if sub.lower() == "a":
                 try:
                     n = int(input("Enter number of nodes: "))
@@ -328,12 +420,29 @@ def main():
 
             elif sub.lower() == "b":
                 try:
-                    graph = create_karate_graph()
-                    karate = True
-                    shortest = None
+                    create_karate_graph()
                     print("Karate-Club Graph created successfully")
                 except Exception as e:
                     print(f"Error:{e}")
+            elif sub.lower() == "c":
+                try:
+                    n = int(input("Enter number of nodes in set A: "))
+                    m = int(input("Enter number of nodes in set B: "))
+                    p = float(input("Enter probability of edge (u,v): "))
+                    # Check if n or m is negative
+                    if n <= 0 or m <= 0:
+                        raise ValueError("Invalid inputs. Number of nodes n and m must be positive.")
+                    graph = create_bipartite_graph(n, m, p)
+                    # Reset shortest path prevent errors with other graph
+                    shortest = None
+                # Throw any other errors
+                except ValueError as e:
+                    print(f"Error: {e}")
+                except Exception as e:
+                    print(f"Error: {e}")
+            elif sub.lower() == "d":
+                file_name = input("Enter file name: ")
+                n, prices, valuations = market_clearing(file_name)
             else:
                 print("Invalid choice. Please try again.")
 
@@ -342,7 +451,9 @@ def main():
             print("A. Shortest-Path")
             print("B. Partition G")
             print("C. Travel Equilibrium and Social Optimality")
-            sub = input("Enter your choice (a/b/c): ")
+            print("D. Perfect Matching")
+            print("E. Preferred-seller Graph")
+            sub = input("Enter your choice (a/b/c/d/e): ")
 
             if sub.lower() == "a":
                 try:
@@ -384,6 +495,10 @@ def main():
                     print(f"Error: {e}")
                 except Exception as e:
                     print(f"Error: {e}")
+            elif sub.lower() == "d":
+                perfect_match = compute_perfect_matching(graph)
+            elif sub.lower() == "e":
+                assignments = compute_preferred_seller(n, prices, valuations)
             else:
                 print("Invalid choice. Please try again.")
 
@@ -392,10 +507,11 @@ def main():
             print("A. Shortest Path")
             print("B. Cluster Coefficients")
             print("C. Neighborhood Overlaps")
-            print("D. Plot the Digraph")
-            sub = input("Enter your choice (a/b/c/d): ")
+            print("D. Bipartite Graph")
+            print("E. Preferred-seller Graph")
+            sub = input("Enter your choice (a/b/c/d/e): ")
 
-            while sub.lower() != "d":
+            while sub.lower() != "d" and sub.lower() != "e":
                 if sub.lower() == "a":
                     plot_shortest_path = not plot_shortest_path
                     if plot_shortest_path:
@@ -417,13 +533,17 @@ def main():
                 else:
                     print("Invalid choice. Please try again.")
 
-                sub = input("Enter your choice (a/b/c/d): ")
+                sub = input("Enter your choice (a/b/c/d/e): ")
+
             try:
                 # Check if graph and shortest path is defined yet
                 if 'graph' not in locals() or 'shortest' not in locals():
                     raise ValueError("Graph or shortest path is not defined.")
-                plot_graph(graph, karate, shortest, plot_shortest_path, plot_cluster_coefficient,
-                           plot_neighborhood_overlap)
+                if sub.lower() == "d":
+                    plot_graph(graph, True, shortest, plot_shortest_path, plot_cluster_coefficient,
+                               plot_neighborhood_overlap)
+                elif sub.lower() == "e":
+                    plot_preferred_seller_graph(assignments)
                 print("Graph plotted.")
             # Throw any other errors
             except ValueError as e:
