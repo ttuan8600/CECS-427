@@ -122,6 +122,9 @@ def create_bipartite_graph(n, m, p):
         for v in range(n, n + m):
             if random.random() < p:
                 G.add_edge(u, v)
+
+    # nx.draw(G, with_labels=True)
+    # plt.show()
     return G
 
 
@@ -400,7 +403,7 @@ def main():
             print("B. Karate-Club Graph")
             print("C. Bipartite Graph")
             print("D. Market-clearing")
-            sub = input("Enter your choice (a/b/c): ")
+            sub = input("Enter your choice (a/b/c/d): ")
             if sub.lower() == "a":
                 try:
                     n = int(input("Enter number of nodes: "))
