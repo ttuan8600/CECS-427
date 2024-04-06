@@ -226,11 +226,11 @@ def compute_preferred_seller(n, prices, valuations):
                     preferred_seller = house
 
             buyer_to_preferred_seller[buyer] = preferred_seller
-            print(f"Buyer_{buyer + 1}'s preferred seller: House_{preferred_seller + 1} with a payoff of {max_payoff}.")
+            print(f"Buyer {buyer + 1}'s preferred seller: House {preferred_seller + 1} with a {max_payoff} payoff.")
 
         max_buyer_payoff = max(buyer_to_preferred_seller.keys(), key=(
             lambda k: valuations[k][buyer_to_preferred_seller[k]] - prices[buyer_to_preferred_seller[k]]))
-        print(f"The buyer with the maximum payoff for their preferred seller is: Buyer_{max_buyer_payoff + 1}")
+        print(f"Buyer with the maximum payoff for their preferred seller: Buyer {max_buyer_payoff + 1}")
 
         for buyer, house in buyer_to_preferred_seller.items():
             if house is not None and house not in matched_houses:
@@ -329,17 +329,14 @@ def plot_graph(G, bipartite, shortest, plot_shortest_path, plot_cluster_coeffici
 
 
 # Plot the preferred seller graph
-def plot_preferred_seller_graph(assignments):
-    G = nx.Graph()
-    for buyer, assignment in assignments.items():
-        G.add_edge(f"Buyer_{buyer + 1}", f"House_{assignment['house'] + 1}", payoff=assignment['payoff'])
+def plot_preferred_seller_graph(G, buyers, assignments):
+    pos = nx.bipartite_layout(G, buyers)
+    nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000)
 
-    pos = nx.spring_layout(G)
-    nx.draw(G, pos, with_labels=True)
-    edge_labels = nx.get_edge_attributes(G, 'payoff')
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+    assigned_edges = [(f"Buyer_{buyer + 1}", f"House_1") for buyer in assignments if assignments[buyer]['house'] == 0]
+    nx.draw_networkx_edges(G, pos, edgelist=assigned_edges, edge_color='red', width=2)
+
     plt.show()
-
 
 def main():
     # Global variables to temporary hold the G graph and shortest path
