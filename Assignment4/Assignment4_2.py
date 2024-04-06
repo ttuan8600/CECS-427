@@ -7,6 +7,9 @@ def read_data(file_path):
         n = int(file.readline().strip())
         prices = list(map(int, file.readline().strip().split(',')))
         valuations = [list(map(int, line.strip().split(','))) for line in file]
+    print(n)
+    print(prices)
+    print(valuations)
     return n, prices, valuations
 
 def create_graph(n, prices, valuations):

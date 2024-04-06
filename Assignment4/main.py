@@ -130,12 +130,29 @@ def create_bipartite_graph(n, m, p):
 
 # Market clearing with the given file format.
 def market_clearing(filename):
+    # with open(filename, 'r') as file:
+    #     lines = file.readlines()
+    #     n = int(lines[0].split()[0])
+    #     prices = list(map(int, lines[1].split(',')))
+    #     valuations = [list(map(int, line.split(','))) for line in lines[2:]]
+    #
+    # print(n)
+    # print(prices)
+    # print(valuations)
+
+    # Read file
+    valuations = []
     with open(filename, 'r') as file:
         lines = file.readlines()
-        n = int(lines[0].split()[0])
-        prices = list(map(int, lines[1].split(',')))
-        valuations = [list(map(int, line.split(','))) for line in lines[2:]]
 
+    # Parse file contents
+    n = int(file.readline().strip())
+    prices = list(map(int, lines[1].strip().split(',')))
+
+    for line in lines[2:]:
+        valuations.append(list(map(int, line.strip().split(','))))
+
+    # Print the parsed data (optional)
     print(n)
     print(prices)
     print(valuations)
