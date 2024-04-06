@@ -136,6 +136,9 @@ def market_clearing(filename):
         prices = list(map(int, lines[1].split(',')))
         valuations = [list(map(int, line.split(','))) for line in lines[2:]]
 
+    print(n)
+    print(prices)
+    print(valuations)
     return n, prices, valuations
 
 
