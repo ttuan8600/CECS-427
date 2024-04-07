@@ -1,0 +1,37 @@
+Assignment Report - Game Theory
+Student Name: Twan Tran
+Student ID: @029136612
+Course: CECS 427
+
+Approach:
+The provided code implements various functionalities for working with graphs using the NetworkX library in Python. Here's a summary of each function's purpose:
+
+1. create_bipartite_graph: This function generates a random bipartite graph using NetworkX's bipartite.random_graph function. It ensures that the graph is connected before returning it. The function takes three parameters: n (number of nodes in the first partition), m (number of nodes in the second partition), and p (probability of an edge between nodes of different partitions).
+
+2. market_clearing: This function reads market data from a file and parses it to extract the number of buyers (n), the list of prices (prices), and the valuations matrix (valuations). It returns these values for further processing.
+
+3. compute_perfect_matching: This function computes the perfect matching in a given bipartite graph (G). It uses NetworkX's bipartite.maximum_matching function to find the matching. If a perfect matching is not possible, it identifies which side (left, right, or both) has unmatched nodes.
+
+4. compute_preferred_seller: This function computes the preferred seller for each buyer based on their valuations and prices. It creates a bipartite graph (G) where buyers are connected to their preferred houses. It then iteratively assigns houses to buyers based on their valuations and prices, ensuring that each house is assigned to at most one buyer.
+
+5. plot_preferred_seller_graph: This function plots the preferred seller graph using NetworkX and Matplotlib. It visualizes the connections between buyers and their assigned houses.
+
+6. plot_graph: Modify this function to be able to handle plotting bipartite graph and visualizing it.
+
+Challenges Faced:
+
+1. Random Graph Generation: Ensuring the generated bipartite graph is connected posed a challenge, as random graphs may not always be connected. The function checks for connectivity to guarantee a valid graph.
+
+2. Market Clearing: Parsing the market data from a file required careful handling to extract the relevant information accurately. Ensuring the correct format of the data was essential for further processing.
+
+3. Perfect Matching: Determining whether a perfect matching is possible and handling cases where it is not required careful consideration, as different sides of the bipartite graph may have different numbers of nodes.
+
+4. Assignment Computation: Assigning houses to buyers based on their valuations and prices while ensuring each house is assigned to at most one buyer required careful implementation to avoid conflicts and ensure a valid assignment.
+
+Additional Features Implemented:
+
+1. Error Handling: The functions handle errors gracefully, such as when a perfect matching is not possible or when there are issues with the input data format.
+
+2. Efficiency: While not explicitly mentioned, the functions aim for efficiency in computation and memory usage, especially in the assignment computation process, where it iteratively finds the best match for each buyer.
+
+Overall, these functions provide a comprehensive framework for market analysis and assignment computation in bipartite graphs, addressing various challenges and implementing additional features for enhanced functionality.

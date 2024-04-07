@@ -373,6 +373,7 @@ def plot_preferred_seller_graph(G, buyers, assignments):
 
     nx.draw_networkx_edges(G, pos, edgelist=assigned_edges, edge_color='black', style='dashed', width=3)
 
+    plt.title("Preferred Seller Graph")
     plt.show()
 
 
