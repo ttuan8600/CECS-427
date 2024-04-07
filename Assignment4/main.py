@@ -1,6 +1,7 @@
 import neal
 import random
 import networkx as nx
+import numpy as np
 from numpy import log as ln
 import dwave_networkx as dnx
 import matplotlib.pyplot as plt
@@ -115,17 +116,10 @@ def create_karate_graph():
 
 # Creates a random bipartite graph with node sets A and B and edge (u, v) exists with probability p where u in A and v in B.def create_bipartite_graph(n, m, p):
 def create_bipartite_graph(n, m, p):
-    G = nx.Graph()
-    G.add_nodes_from(range(n), bipartite=0)  # Set nodes in A to bipartite 0
-    G.add_nodes_from(range(n, n + m), bipartite=1)  # Set nodes in B to bipartite 1
-    for u in range(n):
-        for v in range(n, n + m):
-            if random.random() < p:
-                G.add_edge(u, v)
-
-    # nx.draw(G, with_labels=True)
-    # plt.show()
-    return G
+    while True:
+        G = nx.bipartite.random_graph(n, m, p)
+        if nx.is_connected(G):
+            return G
 
 
 # Market clearing with the given file format.
@@ -142,9 +136,9 @@ def market_clearing(filename):
             values = list(map(int, line.strip().split(',')))
             valuations.append(values)
     # Print the parsed data (optional)
-    print(n)
-    print(prices)
-    print(valuations)
+    # print(n)
+    # print(prices)
+    # print(valuations)
     return n, prices, valuations
 
 
@@ -201,13 +195,47 @@ def find_equilibrium(G, n, source, destination):
 
 
 # Computes the perfect matching in the given graph
-def compute_perfect_matching(graph):
-    matching = nx.bipartite.maximum_matching(graph)
-    return matching
+def compute_perfect_matching(G):
+    try:
+        matching = nx.bipartite.maximum_matching(G)
+        if len(matching) == len(G.nodes()):
+            return matching, None, None
+        else:
+            left_nodes, right_nodes = nx.bipartite.sets(G)
+
+            for side, node_set in [("Left", left_nodes), ("Right", right_nodes)]:
+                neighbors = set()
+                for node in node_set:
+                    neighbors.update(G.neighbors(node))
+                if len(neighbors) < len(node_set):
+                    return None, list(node_set), side
+            return None, list(G.nodes()), "Both"
+    except nx.NetworkXError as e:
+        return None, G.nodes()
 
 
 # Compute the preferred-seller graph and output the final assignment (price and payoff of each buyer)
 def compute_preferred_seller(n, prices, valuations):
+    G = nx.Graph()
+    buyers = [f"Buyer{i + 1}" for i in range(n)]
+    houses = [f"House{i + 1}" for i in range(n)]
+    G.add_nodes_from(buyers, bipartite=0)
+    G.add_nodes_from(houses, bipartite=1)
+
+    # Compute preferred seller for each buyer
+    for i, buyer in enumerate(buyers):
+        max_payoff = -np.max(valuations)
+        preferred_house = None
+
+        for j, house in enumerate(houses):
+            payoff = valuations[i][j] - prices[j]
+            if payoff > max_payoff:
+                max_payoff = payoff
+                preferred_house = house
+
+        G.add_edge(buyer, preferred_house)
+
+    # Compute assignments
     assignments = dict()
     remaining_houses = set(range(n))
     remaining_buyers = set(range(n))
@@ -216,40 +244,54 @@ def compute_preferred_seller(n, prices, valuations):
         matched_houses = set()
 
         for buyer in remaining_buyers:
-            max_payoff = -float('inf')
+            max_payoff = -np.max(valuations)
             preferred_seller = None
 
             for house in remaining_houses:
                 payoff = valuations[buyer][house] - prices[house]
-                if payoff > max_payoff:
+                if payoff >= max_payoff:
                     max_payoff = payoff
                     preferred_seller = house
 
             buyer_to_preferred_seller[buyer] = preferred_seller
-            print(f"Buyer {buyer + 1}'s preferred seller: House {preferred_seller + 1} with a {max_payoff} payoff.")
-
-        max_buyer_payoff = max(buyer_to_preferred_seller.keys(), key=(
-            lambda k: valuations[k][buyer_to_preferred_seller[k]] - prices[buyer_to_preferred_seller[k]]))
-        print(f"Buyer with the maximum payoff for their preferred seller: Buyer {max_buyer_payoff + 1}")
 
         for buyer, house in buyer_to_preferred_seller.items():
             if house is not None and house not in matched_houses:
-                assignments[buyer] = {'house': house, 'payoff': valuations[buyer][house] - prices[house]}
+                assignments[buyer] = {'house': house+1, 'payoff': (valuations[buyer][house] - prices[house])}
                 remaining_houses.remove(house)
                 remaining_buyers.remove(buyer)
                 matched_houses.add(house)
 
-    return assignments
+    print(assignments)
+    return G, buyers, assignments
 
 
 # Plot the graph G and highlighting the shortest path if provided
-def plot_graph(G, bipartite, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap):
+def plot_graph(G, bipartite, perfect_match, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap):
     # check if the graph is a karate graph
     if bipartite:
-        nx.draw(G, with_labels=True)
-        plt.show()
+        # assign location of nodes
+        pos = nx.bipartite_layout(G, nodes=set(range(len(G) // 2)))
+
+        # label the nodes
+        labels = {}
+        for node in G.nodes():
+            labels[node] = f"A{node + 1}" if node < len(G) // 2 else f"B{node + 1 - len(G) // 2}"
+
+        # draw graph
+        nx.draw(G, pos, with_labels=True, labels=labels, node_color='lightblue', node_size=700)
+
+        # label the edge if matching
+        if perfect_match:
+            matching_edges = [(k, v) for k, v in perfect_match.items() if k < v]
+            nx.draw_networkx_edges(G, pos, edgelist=matching_edges, edge_color='black', style='dashed', width=3)
     else:
         pos = nx.spring_layout(G)
+        # Draw the edges
+        nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5, edge_color='black')
+
+        # # Draw the labels
+        nx.draw_networkx_labels(G, pos, font_size=8, font_family='sans-serif')
 
     # Draw the nodes
     node_sizes = []
@@ -316,12 +358,6 @@ def plot_graph(G, bipartite, shortest, plot_shortest_path, plot_cluster_coeffici
         edges = [(shortest[i], shortest[i + 1]) for i in range(len(shortest) - 1)]
         nx.draw_networkx_edges(G, pos, edgelist=edges, width=2.0, alpha=0.9, edge_color='black', style='dashed')
 
-    # Draw the edges
-    nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5, edge_color='black')
-
-    # Draw the labels
-    nx.draw_networkx_labels(G, pos, font_size=8, font_family='sans-serif')
-
     # Show the plot
     plt.title("Graph Visualization")
     plt.axis('off')
@@ -333,16 +369,21 @@ def plot_preferred_seller_graph(G, buyers, assignments):
     pos = nx.bipartite_layout(G, buyers)
     nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000)
 
-    assigned_edges = [(f"Buyer_{buyer + 1}", f"House_1") for buyer in assignments if assignments[buyer]['house'] == 0]
-    nx.draw_networkx_edges(G, pos, edgelist=assigned_edges, edge_color='red', width=2)
+    assigned_edges = [(f"Buyer{buyer+1}", f"House{assignments[buyer]['house']}") for buyer in assignments]
+
+    nx.draw_networkx_edges(G, pos, edgelist=assigned_edges, edge_color='black', style='dashed', width=3)
 
     plt.show()
+
 
 def main():
     # Global variables to temporary hold the G graph and shortest path
     shortest = None
     graph = None
+    bipartite = False
     assignments = None
+    buyers = None
+    perfect_match = None
     n, prices, valuations = None, None, None
     plot_shortest_path = False
     plot_cluster_coefficient = False
@@ -419,8 +460,8 @@ def main():
                         raise ValueError("Invalid inputs. Number of nodes n and parameter c must be positive.")
                     graph = create_random_graph(n, c)
                     # Reset shortest path prevent errors with other graph
-                    karate = False
                     shortest = None
+                    print("Random Graph created successfully")
                 # Throw any other errors
                 except ValueError as e:
                     print(f"Error: {e}")
@@ -444,6 +485,8 @@ def main():
                     graph = create_bipartite_graph(n, m, p)
                     # Reset shortest path prevent errors with other graph
                     shortest = None
+                    bipartite = True
+                    print("Bipartite Graph created successfully")
                 # Throw any other errors
                 except ValueError as e:
                     print(f"Error: {e}")
@@ -505,9 +548,11 @@ def main():
                 except Exception as e:
                     print(f"Error: {e}")
             elif sub.lower() == "d":
-                perfect_match = compute_perfect_matching(graph)
+                perfect_match, c_set, side = compute_perfect_matching(graph)
+                print("Perfect match found: ", perfect_match)
             elif sub.lower() == "e":
-                assignments = compute_preferred_seller(n, prices, valuations)
+                graph, buyers, assignments = compute_preferred_seller(n, prices, valuations)
+                print("Preferred Seller Graph computed successfully ")
             else:
                 print("Invalid choice. Please try again.")
 
@@ -549,10 +594,10 @@ def main():
                 if 'graph' not in locals() or 'shortest' not in locals():
                     raise ValueError("Graph or shortest path is not defined.")
                 if sub.lower() == "d":
-                    plot_graph(graph, True, shortest, plot_shortest_path, plot_cluster_coefficient,
+                    plot_graph(graph, bipartite, perfect_match, shortest, plot_shortest_path, plot_cluster_coefficient,
                                plot_neighborhood_overlap)
                 elif sub.lower() == "e":
-                    plot_preferred_seller_graph(assignments)
+                    plot_preferred_seller_graph(graph, buyers, assignments)
                 print("Graph plotted.")
             # Throw any other errors
             except ValueError as e:
