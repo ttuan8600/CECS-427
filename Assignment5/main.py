@@ -1,5 +1,5 @@
 import neal
-import random
+import collections
 import networkx as nx
 import numpy as np
 from numpy import log as ln
@@ -394,6 +394,19 @@ def plot_pagerank(G, lower_bound, upper_bound):
     pos = nx.spring_layout(subgraph)
     nx.draw(subgraph, pos, with_labels=True, node_size=2000, node_color='skyblue', font_size=10, font_color='black')
     plt.title(f"Subgraph with PageRank between {lower_bound} and {upper_bound}")
+    plt.show()
+
+
+# plot in degree distribution on log log scale
+def loglog_plot(graph):
+    degree_seq = sorted([d for n, d in graph.in_degree()], reverse=True)
+    degreeCount = collections.Counter(degree_seq)
+    deg, cnt = zip(*degreeCount.items())
+    # sort, count occurrences, and make them seperate in degree value
+    plt.loglog(deg, cnt, 'bo-')
+    plt.title("Log-Log-Plot")
+    plt.ylabel("Frequency")
+    plt.xlabel("In-Degree")
     plt.show()
 
 
