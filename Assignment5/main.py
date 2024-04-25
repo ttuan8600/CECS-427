@@ -266,6 +266,13 @@ def compute_preferred_seller(n, prices, valuations):
     return G, buyers, assignments
 
 
+# Compute the PageRank of the current graph
+def pagerank(G):
+    # Implement logic to compute and print the PageRank of the graph G
+    pr = nx.pagerank(G)
+    print("PageRank values:", pr)
+
+
 # Plot the graph G and highlighting the shortest path if provided
 def plot_graph(G, bipartite, perfect_match, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap):
     # check if the graph is a karate graph
@@ -374,6 +381,19 @@ def plot_preferred_seller_graph(G, buyers, assignments):
     nx.draw_networkx_edges(G, pos, edgelist=assigned_edges, edge_color='black', style='dashed', width=3)
 
     plt.title("Preferred Seller Graph")
+    plt.show()
+
+
+# Plot the subgraph with all the nodes where the PageRank is at least lower_bound and at most upper_bound
+def plot_pagerank(G, lower_bound, upper_bound):
+    pr = nx.pagerank(G)
+    filtered_nodes = [node for node, rank in pr.items() if lower_bound <= rank <= upper_bound]
+    subgraph = G.subgraph(filtered_nodes)
+
+    plt.figure(figsize=(12, 6))
+    pos = nx.spring_layout(subgraph)
+    nx.draw(subgraph, pos, with_labels=True, node_size=2000, node_color='skyblue', font_size=10, font_color='black')
+    plt.title(f"Subgraph with PageRank between {lower_bound} and {upper_bound}")
     plt.show()
 
 
