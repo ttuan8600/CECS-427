@@ -271,6 +271,7 @@ def pagerank(G):
     # Implement logic to compute and print the PageRank of the graph G
     pr = nx.pagerank(G)
     print("PageRank values:", pr)
+    return pr
 
 
 # Plot the graph G and highlighting the shortest path if provided
@@ -385,8 +386,7 @@ def plot_preferred_seller_graph(G, buyers, assignments):
 
 
 # Plot the subgraph with all the nodes where the PageRank is at least lower_bound and at most upper_bound
-def plot_pagerank(G, lower_bound, upper_bound):
-    pr = nx.pagerank(G)
+def plot_pagerank(G, pr, lower_bound, upper_bound):
     filtered_nodes = [node for node, rank in pr.items() if lower_bound <= rank <= upper_bound]
     subgraph = G.subgraph(filtered_nodes)
 
@@ -418,6 +418,7 @@ def main():
     assignments = None
     buyers = None
     perfect_match = None
+    page_rank = None
     n, prices, valuations = None, None, None
     plot_shortest_path = False
     plot_cluster_coefficient = False
@@ -539,7 +540,8 @@ def main():
             print("C. Travel Equilibrium and Social Optimality")
             print("D. Perfect Matching")
             print("E. Preferred-seller Graph")
-            sub = input("Enter your choice (a/b/c/d/e): ")
+            print("F. PageRank")
+            sub = input("Enter your choice (a/b/c/d/e/f): ")
 
             if sub.lower() == "a":
                 try:
@@ -587,6 +589,9 @@ def main():
             elif sub.lower() == "e":
                 graph, buyers, assignments = compute_preferred_seller(n, prices, valuations)
                 print("Preferred Seller Graph computed successfully ")
+            elif sub.lower() == "f":
+                page_rank = pagerank(graph)
+                print("PageRank computed successfully!")
             else:
                 print("Invalid choice. Please try again.")
 
@@ -597,7 +602,9 @@ def main():
             print("C. Neighborhood Overlaps")
             print("D. Bipartite Graph")
             print("E. Preferred-seller Graph")
-            sub = input("Enter your choice (a/b/c/d/e): ")
+            print("F. PageRank")
+            print("G. Loglog")
+            sub = input("Enter your choice (a/b/c/d/e/f/g): ")
 
             while sub.lower() != "d" and sub.lower() != "e":
                 if sub.lower() == "a":
@@ -621,7 +628,7 @@ def main():
                 else:
                     print("Invalid choice. Please try again.")
 
-                sub = input("Enter your choice (a/b/c/d/e): ")
+                sub = input("Enter your choice (a/b/c/d/e/f/g): ")
 
             try:
                 # Check if graph and shortest path is defined yet
@@ -632,6 +639,14 @@ def main():
                                plot_neighborhood_overlap)
                 elif sub.lower() == "e":
                     plot_preferred_seller_graph(graph, buyers, assignments)
+                elif sub.lower() == "f":
+                    lowerBound = float(input('Enter lower rank cutoff for nodes: '))
+                    upperBound = float(input('Enter upper rank cutoff for nodes: '))
+                    if lowerBound >= upperBound or lowerBound < 0 or upperBound > 1:
+                        raise ValueError
+                    plot_pagerank(graph, page_rank, lowerBound, upperBound)
+                elif sub.lower() ==  "g":
+                    loglog_plot(graph)
                 print("Graph plotted.")
             # Throw any other errors
             except ValueError as e:
