@@ -541,6 +541,8 @@ def main():
             print("E. Preferred-seller Graph")
             sub = input("Enter your choice (a/b/c/d/e): ")
 
+            
+
             if sub.lower() == "a":
                 try:
                     if 'graph' not in locals():
