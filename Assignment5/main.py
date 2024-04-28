@@ -257,7 +257,7 @@ def compute_preferred_seller(n, prices, valuations):
 
         for buyer, house in buyer_to_preferred_seller.items():
             if house is not None and house not in matched_houses:
-                assignments[buyer] = {'house': house+1, 'payoff': (valuations[buyer][house] - prices[house])}
+                assignments[buyer] = {'house': house + 1, 'payoff': (valuations[buyer][house] - prices[house])}
                 remaining_houses.remove(house)
                 remaining_buyers.remove(buyer)
                 matched_houses.add(house)
@@ -266,16 +266,9 @@ def compute_preferred_seller(n, prices, valuations):
     return G, buyers, assignments
 
 
-# Compute the PageRank of the current graph
-def pagerank(G):
-    # Implement logic to compute and print the PageRank of the graph G
-    pr = nx.pagerank(G)
-    print("PageRank values:", pr)
-    return pr
-
-
 # Plot the graph G and highlighting the shortest path if provided
-def plot_graph(G, bipartite, perfect_match, shortest, plot_shortest_path, plot_cluster_coefficient, plot_neighborhood_overlap):
+def plot_graph(G, bipartite, perfect_match, shortest, plot_shortest_path, plot_cluster_coefficient,
+               plot_neighborhood_overlap):
     # check if the graph is a karate graph
     if bipartite:
         # assign location of nodes
@@ -377,7 +370,7 @@ def plot_preferred_seller_graph(G, buyers, assignments):
     pos = nx.bipartite_layout(G, buyers)
     nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000)
 
-    assigned_edges = [(f"Buyer{buyer+1}", f"House{assignments[buyer]['house']}") for buyer in assignments]
+    assigned_edges = [(f"Buyer{buyer + 1}", f"House{assignments[buyer]['house']}") for buyer in assignments]
 
     nx.draw_networkx_edges(G, pos, edgelist=assigned_edges, edge_color='black', style='dashed', width=3)
 
@@ -392,14 +385,14 @@ def plot_pagerank(G, pr, lower_bound, upper_bound):
 
     plt.figure(figsize=(12, 6))
     pos = nx.spring_layout(subgraph)
-    nx.draw(subgraph, pos, with_labels=True, node_size=2000, node_color='skyblue', font_size=10, font_color='black')
+    nx.draw(subgraph, pos, with_labels=True, node_size=2000, node_color='lightblue', font_size=10, font_color='black')
     plt.title(f"Subgraph with PageRank between {lower_bound} and {upper_bound}")
     plt.show()
 
 
 # plot in degree distribution on log log scale
-def loglog_plot(graph):
-    degree_seq = sorted([d for n, d in graph.in_degree()], reverse=True)
+def loglog_plot(G):
+    degree_seq = sorted([d for n, d in G.in_degree()], reverse=True)
     degreeCount = collections.Counter(degree_seq)
     deg, cnt = zip(*degreeCount.items())
     # sort, count occurrences, and make them seperate in degree value
@@ -543,8 +536,6 @@ def main():
             print("F. PageRank")
             sub = input("Enter your choice (a/b/c/d/e/f): ")
 
-            
-
             if sub.lower() == "a":
                 try:
                     if 'graph' not in locals():
@@ -592,8 +583,9 @@ def main():
                 graph, buyers, assignments = compute_preferred_seller(n, prices, valuations)
                 print("Preferred Seller Graph computed successfully ")
             elif sub.lower() == "f":
-                page_rank = pagerank(graph)
+                page_rank = nx.pagerank(graph)
                 print("PageRank computed successfully!")
+                print("PageRank values:", page_rank)
             else:
                 print("Invalid choice. Please try again.")
 
@@ -647,7 +639,7 @@ def main():
                     if lowerBound >= upperBound or lowerBound < 0 or upperBound > 1:
                         raise ValueError
                     plot_pagerank(graph, page_rank, lowerBound, upperBound)
-                elif sub.lower() ==  "g":
+                elif sub.lower() == "g":
                     loglog_plot(graph)
                 print("Graph plotted.")
             # Throw any other errors
