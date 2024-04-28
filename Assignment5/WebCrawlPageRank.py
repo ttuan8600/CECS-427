@@ -7,7 +7,8 @@ from networkx import draw, DiGraph, spring_layout
 
 # Global Constants
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 '
+                  'Safari/537.36 '
 }
 MAX_SIZE = 750
 MIN_SIZE = 100
@@ -55,7 +56,7 @@ def web_crawl(urls, n):
         # Loop each link found on the page
         for link in links:
             try:
-                href = link.get("href")
+                href = str(link.get("href"))
                 if not href.startswith('http'):
                     href = domain + href
                 elif not href.startswith(domain):
@@ -78,17 +79,6 @@ def plot_graph(graph):
     pos = spring_layout(graph, k=1.5)
     draw(graph, pos)
     plt.show()
-
-
-def r_graph():
-    fileName = input("Enter path to pickle (.p) file to read graph from: ")
-    while True:
-        try:
-            with open(fileName, 'rb') as file:
-                return pickle.load(file)
-        except Exception:
-            fileName = retry_enter_file("Enter path to pickle (.p) file to read graph from: ")
-            continue
 
 
 def main():
