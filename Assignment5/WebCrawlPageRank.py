@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pickle
 from networkx import draw, DiGraph, pagerank, spring_layout
 
+
 # Global Constants
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
@@ -14,10 +15,12 @@ HEADERS = {
 MAX_SIZE = 750
 MIN_SIZE = 100
 
+
 # Retry file input if path invalid
 def retry_enter_file(message, extension):
     print(f'Invalid file, please enter a path to a valid {extension} file\n')
     return input(message)
+
 
 # read urls from txt file
 def read_url():
@@ -33,6 +36,7 @@ def read_url():
             fileName = retry_enter_file("Enter path to plaintext file to read urls from: ", '.txt')
             continue
 
+
 def web_crawl(urls, LIMIT):
     urlQueue = urls.copy() # copy list of urls instead of modifying original list
     domain = urlQueue.pop(0)  # Assuming first URL is the domain
@@ -40,41 +44,43 @@ def web_crawl(urls, LIMIT):
     scrapedUrls = 0 
 
     while scrapedUrls < LIMIT and urlQueue:
-            currentUrl = urlQueue.pop(0) # pop the first url from the queue
-            if currentUrl in graph: # skipping processed urls
-                continue
-            response = requests.get(currentUrl, headers=HEADERS)
-            # HTTP request to fetch content of page
-            soup = BeautifulSoup(response.content, 'lxml')
-            links = soup.find_all('a')
-            scrapedUrls += 1
-            print(f"Scraped {scrapedUrls}: {currentUrl}")
+        currentUrl = urlQueue.pop(0) # pop the first url from the queue
+        if currentUrl in graph: # skipping processed urls
+            continue
+        response = requests.get(currentUrl, headers=HEADERS)
+        # HTTP request to fetch content of page
+        soup = BeautifulSoup(response.content, 'lxml')
+        links = soup.find_all('a')
+        scrapedUrls += 1
+        print(f"Scraped {scrapedUrls}: {currentUrl}")
             
-            # Loop each link found on the page
-            for link in links:
-                try:
-                    href = link.get("href")
-                    if not href.startswith('http'):
-                        href = domain + href
-                    elif not href.startswith(domain):
-                        continue
-                    if currentUrl != href and not href.startswith(currentUrl):
-                    # add the link as edge in the graph
-                        urlQueue.append(href)
-                        if graph.number_of_nodes() < LIMIT:
-                            graph.add_edge(currentUrl, href)
-                        elif currentUrl in graph and href in graph:
-                            graph.add_edge(currentUrl, href)
-                except Exception as ex:
-                    print(f'Error processing {currentUrl}: {ex}')
+        # Loop each link found on the page
+        for link in links:
+            try:
+                href = link.get("href")
+                if not href.startswith('http'):
+                    href = domain + href
+                elif not href.startswith(domain):
                     continue
+                if currentUrl != href and not href.startswith(currentUrl):
+                    # add the link as edge in the graph
+                    urlQueue.append(href)
+                    if graph.number_of_nodes() < LIMIT:
+                        graph.add_edge(currentUrl, href)
+                    elif currentUrl in graph and href in graph:
+                        graph.add_edge(currentUrl, href)
+            except Exception as ex:
+                print(f'Error processing {currentUrl}: {ex}')
+                continue
 
     return graph
+
 
 def plot_graph(graph):
     pos = spring_layout(graph, k=1.5)
     draw(graph, pos)
     plt.show()
+
 
 # plot in degree distribution on log log scale
 def loglog_plot(graph):
@@ -87,6 +93,7 @@ def loglog_plot(graph):
     plt.ylabel("Frequency")
     plt.xlabel("In-Degree")
     plt.show()
+
 
 def r_graph():
     fileName = input("Enter path to pickle (.p) file to read graph from: ")
@@ -101,6 +108,7 @@ def r_graph():
             fileName = retry_enter_file("Enter path to pickle (.p) file to read graph from: ", '.p')
             continue
 
+
 # calculate PageRank values
 def p_rank(graph):
     pageRankDict = pagerank(graph)
@@ -108,6 +116,7 @@ def p_rank(graph):
     with open('pageRanks.txt', 'w') as outputFile:
         outputFile.write(json.dumps(pageRankDict))
     return pageRankDict
+
 
 # filter nodes based on PageRank cutoffs
 def cutoff_p_rank(graph, pageRankDict):
@@ -131,6 +140,7 @@ def cutoff_p_rank(graph, pageRankDict):
     removeNodes = [n for n, d in pageRankDict.items() if not lowerRankLim <= d <= upperRankLim]
     graph.remove_nodes_from(removeNodes)
 
+
 def plot_p_rank(graph, pageRankDict):
     maxPageRank = max(pageRankDict.values())
     minPageRank = min(pageRankDict.values())
@@ -139,6 +149,7 @@ def plot_p_rank(graph, pageRankDict):
          node_color=[((pageRankDict[node] - minPageRank) / (maxPageRank - minPageRank), 238/255, 144/255) for node in graph.nodes()])
     nx.draw_networkx_edges(graph, pos, edge_color='black', alpha=0.5)
     plt.show()
+
 
 def main():
     while True:
@@ -171,6 +182,7 @@ def main():
 
         else:
             print("Invalid option, try again.")
+
 
 if __name__ == "__main__":
     main()

@@ -543,6 +543,8 @@ def main():
             print("F. PageRank")
             sub = input("Enter your choice (a/b/c/d/e/f): ")
 
+            
+
             if sub.lower() == "a":
                 try:
                     if 'graph' not in locals():
