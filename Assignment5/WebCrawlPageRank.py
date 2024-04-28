@@ -84,7 +84,7 @@ def plot_graph(graph):
 def main():
     n, urls = read_url()
     graph = web_crawl(urls, n)
-    print('Crawling Successfully Completed\nTotal node count:', graph.number_of_nodes())
+    print('Crawling Successfully Completed!\nTotal node count:', graph.number_of_nodes())
 
     writeFile = input('Enter .p file name to write representation of graph to: ')
     pickle.dump(graph, open(writeFile, 'wb'))
