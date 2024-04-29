@@ -1,0 +1,29 @@
+Assignment Report - Information Network and the WWW
+Student Name: Twan Tran
+Student ID: @029136612
+Course: CECS 427
+
+Approach:
+The provided code implements various functionalities for working with graphs using the NetworkX library in Python. Here's a summary of each function's purpose:
+
+1. PageRank: create in menu of main using nx.pagerank (built-in function given in networkx library)
+
+2. plot_pagerank: This function using the pagerank caluated from previous method to create a graph, and asks for upper/lower bound to fileter out the pagerank that fit.
+
+3. loglog_plot: This function creates Loglog plot by calculating the degrees and such.
+
+
+Challenges Faced:
+
+1. Web Scraping: I was unable to use Scrapy to do web scraping, so in return, I tried to look for other ways, algorithms that can help me do web scraping. I also use other libraries to help with saving the graph, pagerank graph, etc.
+
+2. Loglog plot: It was my first time trying to plot something like this, was a little unfamiliar with it, but after I figured out how to compute the degree, I managed to plot the plot.
+
+
+Additional Features Implemented:
+
+1. Error Handling: The functions handle errors gracefully, such as when a perfect matching is not possible or when there are issues with the input data format.
+
+2. Efficiency: While not explicitly mentioned, the functions aim for efficiency in computation and memory usage, especially in the assignment computation process, where it iteratively finds the best match for each buyer.
+
+Overall, these functions provide a comprehensive framework for market analysis and assignment computation in bipartite graphs, addressing various challenges and implementing additional features for enhanced functionality.
