@@ -1,3 +1,5 @@
+import json
+
 import neal
 import collections
 import networkx as nx
@@ -380,6 +382,10 @@ def plot_preferred_seller_graph(G, buyers, assignments):
 
 # Plot the subgraph with all the nodes where the PageRank is at least lower_bound and at most upper_bound
 def plot_pagerank(G, pr, lower_bound, upper_bound):
+    pageRankDict = nx.pagerank(G)
+    with open('pageRanks.txt', 'w') as outputFile:
+        outputFile.write(json.dumps(pageRankDict))
+
     filtered_nodes = [node for node, rank in pr.items() if lower_bound <= rank <= upper_bound]
     subgraph = G.subgraph(filtered_nodes)
 

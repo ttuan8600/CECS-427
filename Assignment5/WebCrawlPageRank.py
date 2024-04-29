@@ -1,7 +1,10 @@
+import json
+import pickle
+
 import requests
 from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
-from networkx import draw, DiGraph, spring_layout
+from networkx import draw, DiGraph, spring_layout, pagerank
 
 # Global Constants
 HEADERS = {
@@ -73,6 +76,12 @@ def web_crawl(urls, n):
 
 
 def plot_graph(graph):
+
+    pageRankDict = pagerank(graph)
+    print('Writing pageranks to pageRanks.txt')
+    with open('pageRanks.txt', 'w') as outputFile:
+        outputFile.write(json.dumps(pageRankDict))
+
     pos = spring_layout(graph, k=1.5)
     draw(graph, pos)
     plt.show()
@@ -83,8 +92,8 @@ def main():
     graph = web_crawl(urls, n)
     print('Crawling Successfully Completed!\nTotal node count:', graph.number_of_nodes())
 
-    # writeFile = input('Enter .p file name to write representation of graph to: ')
-    # pickle.dump(graph, open(writeFile, 'wb'))
+    writeFile = input('Enter .p file name to write representation of graph to: ')
+    pickle.dump(graph, open(writeFile, 'wb'))
 
     plot_graph(graph)
 
