@@ -1,6 +1,6 @@
 import json
 import pickle
-
+import networkx as nx
 import requests
 from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
@@ -87,14 +87,31 @@ def plot_graph(graph):
     plt.show()
 
 
+def save_graph(G, file_name):
+    try:
+        # Write the graph to the file in adjacency list format
+        if isinstance(G, nx.DiGraph):
+            # Directed graph
+            nx.write_weighted_edgelist(G, file_name)
+        elif isinstance(G, nx.Graph):
+            # Undirected graph
+            nx.write_edgelist(G, file_name, data=False)
+        else:
+            print("Graph type not supported.")
+        print(f"Graph saved to '{file_name}' successfully.")
+    # Throw error when fail to save the graph
+    except Exception as e:
+        print(f"Error saving graph to '{file_name}': {e}")
+        
+        
+        
 def main():
     n, urls = read_url()
     graph = web_crawl(urls, n)
     print('Crawling Successfully Completed!\nTotal node count:', graph.number_of_nodes())
 
     writeFile = input('Enter .p file name to write representation of graph to: ')
-    pickle.dump(graph, open(writeFile, 'wb'))
-
+    save_graph(graph, writeFile)
     plot_graph(graph)
 
 
