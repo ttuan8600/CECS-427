@@ -55,11 +55,10 @@ def read_weighted_digraph(file_name):
         with open(file_name, 'r') as file:
             for line in file:
                 parts = line.strip().split()
-                source = int(parts[0])
-                target = int(parts[1])
-                a = int(parts[2])
-                b = int(parts[3])
-                G.add_edge(source, target, weight=(a, b))
+                source = parts[0]
+                target = parts[1]
+
+                G.add_edge(source, target)
         return G
     # Throw error for when file is not found
     except FileNotFoundError:
@@ -637,15 +636,15 @@ def main():
                 if sub.lower() == "d":
                     plot_graph(graph, bipartite, perfect_match, shortest, plot_shortest_path, plot_cluster_coefficient,
                                plot_neighborhood_overlap)
-                elif sub.lower() == "e":
+                if sub.lower() == "e":
                     plot_preferred_seller_graph(graph, buyers, assignments)
-                elif sub.lower() == "f":
+                if sub.lower() == "f":
                     lowerBound = float(input('Enter lower rank cutoff for nodes: '))
                     upperBound = float(input('Enter upper rank cutoff for nodes: '))
                     if lowerBound >= upperBound or lowerBound < 0 or upperBound > 1:
                         raise ValueError
                     plot_pagerank(graph, page_rank, lowerBound, upperBound)
-                elif sub.lower() == "g":
+                if sub.lower() == "g":
                     loglog_plot(graph)
                 print("Graph plotted.")
             # Throw any other errors

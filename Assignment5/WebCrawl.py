@@ -76,7 +76,6 @@ def web_crawl(urls, n):
 
 
 def plot_graph(graph):
-
     pageRankDict = pagerank(graph)
     print('Writing pageranks to pageRanks.txt')
     with open('pageRanks.txt', 'w') as outputFile:
