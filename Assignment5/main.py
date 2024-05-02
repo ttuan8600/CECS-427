@@ -633,17 +633,24 @@ def main():
                 # Check if graph and shortest path is defined yet
                 if 'graph' not in locals() or 'shortest' not in locals():
                     raise ValueError("Graph or shortest path is not defined.")
-                if sub.lower() == "d":
-                    plot_graph(graph, bipartite, perfect_match, shortest, plot_shortest_path, plot_cluster_coefficient,
+                if sub.lower() == "d" or sub.lower() == "f":
+                    if sub.lower() == "f":
+                        lowerBound = float(input('Enter lower rank cutoff for nodes: '))
+                        upperBound = float(input('Enter upper rank cutoff for nodes: '))
+                        if lowerBound >= upperBound or lowerBound < 0 or upperBound > 1:
+                            raise ValueError
+                        plot_pagerank(graph, page_rank, lowerBound, upperBound)
+                    else:
+                        plot_graph(graph, bipartite, perfect_match, shortest, plot_shortest_path, plot_cluster_coefficient,
                                plot_neighborhood_overlap)
                 if sub.lower() == "e":
                     plot_preferred_seller_graph(graph, buyers, assignments)
-                if sub.lower() == "f":
-                    lowerBound = float(input('Enter lower rank cutoff for nodes: '))
-                    upperBound = float(input('Enter upper rank cutoff for nodes: '))
-                    if lowerBound >= upperBound or lowerBound < 0 or upperBound > 1:
-                        raise ValueError
-                    plot_pagerank(graph, page_rank, lowerBound, upperBound)
+                # if sub.lower() == "f":
+                #     lowerBound = float(input('Enter lower rank cutoff for nodes: '))
+                #     upperBound = float(input('Enter upper rank cutoff for nodes: '))
+                #     if lowerBound >= upperBound or lowerBound < 0 or upperBound > 1:
+                #         raise ValueError
+                #     plot_pagerank(graph, page_rank, lowerBound, upperBound)
                 if sub.lower() == "g":
                     loglog_plot(graph)
                 print("Graph plotted.")
