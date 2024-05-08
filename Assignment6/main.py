@@ -447,14 +447,15 @@ def cascade(graph, initiators, threshold):
 def covid(graph, p, lifespan, shelter, r):
     # Initialize SIR model states
     nodes = list(graph.nodes())
-    susceptible = set(graph.nodes())
-    infected = set(random.sample(nodes, int(p * len(susceptible))))
+    susceptible = set(nodes)
+    infected = set(random.sample(nodes, int(p * len(nodes))))
     susceptible -= infected
     recovered = set()
 
     # Track epidemic progression
     infected_count = [len(infected)]
     recovered_count = [0]
+    susceptible_count = [len(susceptible)]
 
     for day in range(1, lifespan + 1):
         # Shelter-in-place measures
@@ -483,9 +484,11 @@ def covid(graph, p, lifespan, shelter, r):
         # Track counts
         infected_count.append(len(infected))
         recovered_count.append(len(recovered))
-    
+        susceptible_count.append(len(susceptible))
+
     # Plot epidemic progression
     plt.figure(figsize=(12, 6))
+    plt.plot(range(lifespan + 1), susceptible_count, label='Susceptible')
     plt.plot(range(lifespan + 1), infected_count, label='Infected')
     plt.plot(range(lifespan + 1), recovered_count, label='Recovered')
     plt.xlabel('Day')
@@ -493,6 +496,7 @@ def covid(graph, p, lifespan, shelter, r):
     plt.title('Progression of COVID-19 Epidemic')
     plt.legend()
     plt.show()
+
 
 def main():
     # Global variables to temporary hold the G graph and shortest path
