@@ -3,6 +3,7 @@ import random
 import neal
 import collections
 import networkx as nx
+from scipy.interpolate import interp1d
 import numpy as np
 from numpy import log as ln
 import dwave_networkx as dnx
@@ -467,45 +468,44 @@ def covid(graph, p, lifespan, shelter, r):
         susceptible -= set(vaccinated)
 
         # Spread of the disease
-        new_infections = set()
+        newly_infected = set()
         for node in infected:
             neighbors = set(graph.neighbors(node))
             infected_neighbors = neighbors.intersection(susceptible)
-            for neighbor in infected_neighbors:
-                # Adjust the infection rate here
-                infection_rate = 0.5 + 0.3 * (len(infected) / len(nodes))
-                if random.random() <= infection_rate:
-                    new_infections.add(neighbor)
+            newly_infected.update(infected_neighbors)
 
-        for node in new_infections:
-            susceptible.remove(node)
-            infected.add(node)
+        infected |= newly_infected
+        susceptible -= newly_infected
 
         # Recovery
-        new_recoveries = set()
-        for node in infected:
-            # Adjust the recovery rate here
-            recovery_rate = 0.1 + 0.3 * (len(infected) / len(nodes))
-            if random.random() <= recovery_rate:
-                new_recoveries.add(node)
-
-        for node in new_recoveries:
-            infected.remove(node)
-            recovered.add(node)
+        recovered_today = random.sample(list(infected), int(0.1 * len(infected)))
+        infected -= set(recovered_today)
+        recovered |= set(recovered_today)
 
         # Track counts
         infected_count.append(len(infected))
         recovered_count.append(len(recovered))
         susceptible_count.append(len(susceptible))
 
+    # Smoothen the data using cubic spline interpolation
+    x = np.arange(lifespan + 1)
+    f_susceptible = interp1d(x, susceptible_count, kind='cubic')
+    f_infected = interp1d(x, infected_count, kind='cubic')
+    f_recovered = interp1d(x, recovered_count, kind='cubic')
+
+    x_smooth = np.linspace(0, lifespan, 300)
+    susceptible_smooth = f_susceptible(x_smooth)
+    infected_smooth = f_infected(x_smooth)
+    recovered_smooth = f_recovered(x_smooth)
+
     # Plot epidemic progression
     plt.figure(figsize=(12, 6))
-    plt.plot(range(lifespan + 1), susceptible_count, label='Susceptible')
-    plt.plot(range(lifespan + 1), infected_count, label='Infected')
-    plt.plot(range(lifespan + 1), recovered_count, label='Recovered')
+    plt.plot(x_smooth, susceptible_smooth, label='Susceptible')
+    plt.plot(x_smooth, infected_smooth, label='Infected')
+    plt.plot(x_smooth, recovered_smooth, label='Recovered')
     plt.xlabel('Day')
-    plt.ylabel('Number of Nodes')
-    plt.title('Progression of COVID-19 Epidemic')
+    plt.ylabel('Number of People')
+    plt.title('SIR Model')
     plt.legend()
     plt.show()
 
