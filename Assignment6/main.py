@@ -467,19 +467,31 @@ def covid(graph, p, lifespan, shelter, r):
         susceptible -= set(vaccinated)
 
         # Spread of the disease
-        newly_infected = set()
+        new_infections = set()
         for node in infected:
             neighbors = set(graph.neighbors(node))
             infected_neighbors = neighbors.intersection(susceptible)
-            newly_infected.update(infected_neighbors)
+            for neighbor in infected_neighbors:
+                # Adjust the infection rate here
+                infection_rate = 0.5 + 0.3 * (len(infected) / len(nodes))
+                if random.random() <= infection_rate:
+                    new_infections.add(neighbor)
 
-        infected |= newly_infected
-        susceptible -= newly_infected
+        for node in new_infections:
+            susceptible.remove(node)
+            infected.add(node)
 
         # Recovery
-        recovered_today = random.sample(list(infected), int(0.1 * len(infected)))
-        infected -= set(recovered_today)
-        recovered |= set(recovered_today)
+        new_recoveries = set()
+        for node in infected:
+            # Adjust the recovery rate here
+            recovery_rate = 0.1 + 0.3 * (len(infected) / len(nodes))
+            if random.random() <= recovery_rate:
+                new_recoveries.add(node)
+
+        for node in new_recoveries:
+            infected.remove(node)
+            recovered.add(node)
 
         # Track counts
         infected_count.append(len(infected))
