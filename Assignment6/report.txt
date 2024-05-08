@@ -1,0 +1,23 @@
+Assignment Report - Network Dynamic Population Model
+Student Name: Twan Tran
+Student ID: @029136612
+Course: CECS 427
+
+Approach:
+The provided code implements a simulation of the COVID-19 epidemic using the SIR model, shelter-in-place measures, and vaccination in directed graphs. Here's a summary of each function's purpose:
+
+1.  simulate_epidemic: This function simulates the progression of the epidemic over a specified lifespan using the SIR model. It tracks the number of infected and recovered nodes over time, incorporating shelter-in-place measures and vaccination.
+
+2.  plot_epidemic_progression: This function plots the progression of the epidemic, showing the number of infected and recovered nodes over time.
+
+Challenges Faced:
+
+1.  Model Complexity: The SIR model, shelter-in-place measures, and vaccination add complexity to the simulation, requiring careful implementation and parameter tuning to ensure realistic results.
+2.  Graph Manipulation: Manipulating the graph to simulate shelter-in-place measures and vaccination adds another layer of complexity, requiring efficient algorithms to update node states.
+
+Additional Features Implemented:
+
+1.  Dynamic Graph: The simulation updates the graph dynamically to reflect changes in the network due to shelter-in-place measures and vaccination.
+2.  Visualization: The simulation provides visualizations of the epidemic progression, aiding in understanding the impact of different measures and vaccination rates.
+
+Overall, these functions provide a comprehensive framework for simulating the COVID-19 epidemic in directed graphs, allowing for the analysis of different scenarios and interventions.

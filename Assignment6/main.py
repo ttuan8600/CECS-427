@@ -1,5 +1,5 @@
 import json
-
+import random
 import neal
 import collections
 import networkx as nx
@@ -109,10 +109,11 @@ def create_karate_graph():
     karate_graph = nx.karate_club_graph()
 
     # Plot the graph
-    pos = nx.spring_layout(karate_graph)
+    pos = nx.circular_layout(karate_graph)
     nx.draw(karate_graph, pos, with_labels=True, node_color='lightblue', edge_color='gray')
     plt.title("Karate Club Graph")
     plt.show()
+    return karate_graph
 
 
 # Creates a random bipartite graph with node sets A and B and edge (u, v) exists with probability p where u in A and v in B.def create_bipartite_graph(n, m, p):
@@ -407,109 +408,91 @@ def loglog_plot(G):
     plt.xlabel("In-Degree")
     plt.show()
 
-import networkx as nx
-import matplotlib.pyplot as plt
 
-def simulate_cascade(graph, initiators, threshold):
-    """
-    Simulates a cascade process in a graph.
-
-    Args:
-        graph: A networkx graph object.
-        initiators: A list of nodes representing initiators.
-        threshold: The threshold for influence.
-
-    Returns:
-        A new graph with influenced nodes marked.
-    """
+def cascade(graph, initiators, threshold):
+    # Create a set to keep track of influenced nodes
     influenced = set(initiators)
-    considered = set()
-    while influenced:
-        new_influenced = set()
-        for node in influenced:
-            for neighbor in graph.neighbors(node):
-                if neighbor not in considered and graph.edges[node, neighbor]["weight"] >= threshold:
-                    new_influenced.add(neighbor)
-                    considered.add(neighbor)
-        influenced.update(new_influenced)
-    return graph.subgraph(influenced)
+    
+    # Initialize a queue with the initiators
+    queue = list(initiators)
+    
+    while queue:
+        current_node = queue.pop(0)
+        neighbors = list(graph.neighbors(current_node))
+        for neighbor in neighbors:
+            if neighbor not in influenced and random.random() <= threshold:
+                influenced.add(neighbor)
+                queue.append(neighbor)
+    
+    # Plot the original graph with initiators
+    
+    pos = nx.circular_layout(graph)
 
-def plot_graphs(original, influenced):
-    """
-    Plots the original graph with initiators and the final graph with influenced nodes.
-    """
-    pos = nx.spring_layout(original)
+    plt.figure(figsize=(12, 6))
+    plt.subplot(121)
+    nx.draw(graph, pos, with_labels=True, node_color='skyblue', node_size=800)
+    nx.draw_networkx_nodes(graph, pos, nodelist=initiators, node_color='red', node_size=800)
+    plt.title('Original Graph with Initiators')
 
-    # Highlight initiators in red
-    original_nodes = [("red" if node in original.nodes else "blue") for node in original.nodes]
+    # Plot the final graph with influenced nodes
+    plt.subplot(122)
+    nx.draw(graph, pos, with_labels=True, node_color='skyblue', node_size=800)
+    nx.draw_networkx_nodes(graph, pos, nodelist=list(influenced), node_color='green', node_size=800)
+    plt.title('Final Graph with Influenced Nodes')
 
-    # Highlight influenced nodes in green
-    influenced_nodes = [("green" if node in influenced.nodes else "blue") for node in influenced.nodes]
-
-    nx.draw(original, pos, with_labels=True, node_color=original_nodes)
-    plt.title("Original Graph with Initiators (Red)")
+    plt.tight_layout()
     plt.show()
 
-    nx.draw(influenced, pos, with_labels=True, node_color=influenced_nodes)
-    plt.title("Final Graph with Influenced Nodes (Green)")
-    plt.show()
 
-# # Example usage (replace with your actual graph creation)
-# graph = nx.Graph()  # Create your graph with weights on edges
-# initiators = [1, 5]  # Choose your initiators
-# threshold = 0.7  # Set your threshold
+def covid(graph, p, lifespan, shelter, r):
+    # Initialize SIR model states
+    nodes = list(graph.nodes())
+    susceptible = set(graph.nodes())
+    infected = set(random.sample(nodes, int(p * len(susceptible))))
+    susceptible -= infected
+    recovered = set()
 
-# influenced_graph = simulate_cascade(graph.copy(), initiators, threshold)
-# plot_graphs(graph, influenced_graph)
-
-import random
-
-class Node:
-  def __init__(self):
-    self.state = "Susceptible"  # Can be "Susceptible", "Infected", "Recovered"
-    self.days_infected = 0
-
-def simulate_covid(graph, p, lifespan, shelter, r):
-    """
-    Simulates the progression of COVID-19 using SIR model.
-
-    Args:
-        graph: A directed networkx graph object.
-        p: Fraction of initially infected nodes.
-        lifespan: Period of days of the simulation.
-        shelter: Fraction of edges not considered by shelter-in-place.
-        r: Vaccination rate.
-
-    Returns:
-        A list containing daily counts of susceptible, infected, and recovered nodes.
-    """
-    infected_count = []
-    susceptible = [len(graph.nodes)]
-    infected = [int(p * len(graph.nodes))]
-    recovered = [0]
-
-    # Initialize infected nodes
-    for node in random.sample(list(graph.nodes), infected[0]):
-        graph.nodes[node]["state"] = "Infected"
+    # Track epidemic progression
+    infected_count = [len(infected)]
+    recovered_count = [0]
 
     for day in range(1, lifespan + 1):
-        new_infected = 0
-        for node in graph.nodes:
-            if graph.nodes[node]["state"] == "Infected":
-                graph.nodes[node]["days_infected"] += 1
-                if graph.nodes[node]["days_infected"] > 10:  # Recover after 10 days
-                    graph.nodes[node]["state"] = "Recovered"
-                else:
-                    for neighbor in graph.neighbors(node):
-                        if random.random() < (1 - shelter) * (1 - graph.nodes[neighbor]["state"] not in ["Recovered", "Infected"]):
-                            graph.nodes[neighbor]["state"] = "Infected"
-                            new_infected += 1
-        # Vaccination effect - reduce infection probability for susceptible nodes
-        susceptible[day] = susceptible[day-1] - int(r * susceptible[day-1])
-        infected[day] = infected[day-1] + new_infected
-        recovered[day] = recovered[day - 1] + (infected[day - 1] - new_infected)  # Recoveries from previous day
+        # Shelter-in-place measures
+        edges_to_remove = random.sample(list(graph.edges()), int(shelter * len(graph.edges())))
+        graph.remove_edges_from(edges_to_remove)
 
-    return [susceptible, infected, recovered]  # Return daily counts
+        # Vaccination
+        vaccinated = random.sample(list(susceptible), int(r * len(susceptible)))
+        susceptible -= set(vaccinated)
+
+        # Spread of the disease
+        newly_infected = set()
+        for node in infected:
+            neighbors = set(graph.neighbors(node))
+            infected_neighbors = neighbors.intersection(susceptible)
+            newly_infected.update(infected_neighbors)
+
+        infected |= newly_infected
+        susceptible -= newly_infected
+
+        # Recovery
+        recovered_today = random.sample(list(infected), int(0.1 * len(infected)))
+        infected -= set(recovered_today)
+        recovered |= set(recovered_today)
+
+        # Track counts
+        infected_count.append(len(infected))
+        recovered_count.append(len(recovered))
+    
+    # Plot epidemic progression
+    plt.figure(figsize=(12, 6))
+    plt.plot(range(lifespan + 1), infected_count, label='Infected')
+    plt.plot(range(lifespan + 1), recovered_count, label='Recovered')
+    plt.xlabel('Day')
+    plt.ylabel('Number of Nodes')
+    plt.title('Progression of COVID-19 Epidemic')
+    plt.legend()
+    plt.show()
 
 def main():
     # Global variables to temporary hold the G graph and shortest path
@@ -606,7 +589,7 @@ def main():
 
             elif sub.lower() == "b":
                 try:
-                    create_karate_graph()
+                    graph = create_karate_graph()
                     print("Karate-Club Graph created successfully")
                 except Exception as e:
                     print(f"Error:{e}")
@@ -642,7 +625,9 @@ def main():
             print("D. Perfect Matching")
             print("E. Preferred-seller Graph")
             print("F. PageRank")
-            sub = input("Enter your choice (a/b/c/d/e/f): ")
+            print("G. Cascade Effect")
+            print("H. COVID-19")
+            sub = input("Enter your choice (a/b/c/d/e/f/g/h): ")
 
             if sub.lower() == "a":
                 try:
@@ -684,18 +669,52 @@ def main():
                     print(f"Error: {e}")
                 except Exception as e:
                     print(f"Error: {e}")
+                    
             elif sub.lower() == "d":
                 perfect_match, c_set, side = compute_perfect_matching(graph)
                 print("Perfect match found: ", perfect_match)
+                
             elif sub.lower() == "e":
                 graph, buyers, assignments = compute_preferred_seller(n, prices, valuations)
                 print("Preferred Seller Graph computed successfully ")
+                
             elif sub.lower() == "f":
                 page_rank = nx.pagerank(graph)
                 print("PageRank computed successfully!")
                 print("PageRank values:", page_rank)
+            
+            elif sub.lower() == "g":
+                try:
+                    l = []
+                    m = int(input("Enter the number of initiators: "))
+                    for i in range (m): 
+                        x = int(input("Enter the node: "))
+                        l.append(x)
+                    print("Initiators: ", l)
+                    q = float(input("Enter the threshold of the cascade: "))
+                    cascade(graph.copy(), l, q)
+                except ValueError as e:
+                    print(f"Error: {e}")
+                except Exception as e:
+                    print(f"Error: {e}")
+            
+            elif sub.lower() == "h":
+                try:
+                    file_name = input("Enter the edgelist: ")
+                    graph = nx.read_edgelist(file_name)
+                    p = float(input("Enter the fraction of initially infected nodes: "))
+                    lifespan = int(input("Enter the period days of the simulation: "))
+                    shelter = float(input("Enter the fraction of edges that are not considered by the shelter-in-place: "))
+                    r = float(input("Enter the vaccination rate: "))
+                    covid(graph, p, lifespan, shelter, r)
+             
+                except ValueError as e:
+                    print(f"Error: {e}")
+                except Exception as e:
+                    print(f"Error: {e}")
+            
             else:
-                print("Invalid choice. Please try again.")
+                print("Invalid input. Please try again.")
 
         elif choice == "6":
             print("Plotting Options:")
