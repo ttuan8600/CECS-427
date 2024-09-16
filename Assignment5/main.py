@@ -599,10 +599,10 @@ def main():
             print("A. Shortest Path")
             print("B. Cluster Coefficients")
             print("C. Neighborhood Overlaps")
-            print("D. Bipartite Graph")
-            print("E. Preferred-seller Graph")
-            print("F. PageRank")
-            print("G. Loglog")
+            print("D. PageRank")
+            print("E. Loglog")
+            print("F. Bipartite Graph")
+            print("G. Preferred-seller Graph")
             sub = input("Enter your choice (a/b/c/d/e/f/g): ")
 
             while sub.lower() != "d" and sub.lower() != "e":
@@ -633,26 +633,28 @@ def main():
                 # Check if graph and shortest path is defined yet
                 if 'graph' not in locals() or 'shortest' not in locals():
                     raise ValueError("Graph or shortest path is not defined.")
-                if sub.lower() == "d" or sub.lower() == "f":
-                    if sub.lower() == "f":
-                        lowerBound = float(input('Enter lower rank cutoff for nodes: '))
-                        upperBound = float(input('Enter upper rank cutoff for nodes: '))
-                        if lowerBound >= upperBound or lowerBound < 0 or upperBound > 1:
-                            raise ValueError
-                        plot_pagerank(graph, page_rank, lowerBound, upperBound)
-                    else:
-                        plot_graph(graph, bipartite, perfect_match, shortest, plot_shortest_path, plot_cluster_coefficient,
-                               plot_neighborhood_overlap)
-                if sub.lower() == "e":
-                    plot_preferred_seller_graph(graph, buyers, assignments)
-                # if sub.lower() == "f":
-                #     lowerBound = float(input('Enter lower rank cutoff for nodes: '))
-                #     upperBound = float(input('Enter upper rank cutoff for nodes: '))
-                #     if lowerBound >= upperBound or lowerBound < 0 or upperBound > 1:
-                #         raise ValueError
-                #     plot_pagerank(graph, page_rank, lowerBound, upperBound)
-                if sub.lower() == "g":
+                if sub.lower() == "d":
+                    lowerBound = min(page_rank.values())
+                    upperBound = max(page_rank.values())
+                    print("Lower Bound: ", lowerBound)
+                    print("Upper Bound: ", upperBound)
+                    if lowerBound >= upperBound or lowerBound < 0 or upperBound > 1:
+                        raise ValueError
+                    plot_pagerank(graph, page_rank, lowerBound, upperBound)
+                    #     plot_graph(graph, bipartite, perfect_match, shortest, plot_shortest_path, plot_cluster_coefficient,plot_neighborhood_overlap)
+                elif sub.lower() == "e":
                     loglog_plot(graph)
+                    # plot_preferred_seller_graph(graph, buyers, assignments)
+                elif sub.lower() == "f":
+                    lowerBound = float(input('Enter lower rank cutoff for nodes: '))
+                    upperBound = float(input('Enter upper rank cutoff for nodes: '))
+                    if lowerBound >= upperBound or lowerBound < 0 or upperBound > 1:
+                        raise ValueError
+                    plot_pagerank(graph, page_rank, lowerBound, upperBound)
+                elif sub.lower() == "g":
+                    loglog_plot(graph)
+                else:
+                    print("error")
                 print("Graph plotted.")
             # Throw any other errors
             except ValueError as e:
